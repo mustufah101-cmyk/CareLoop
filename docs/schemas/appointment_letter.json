@@ -1,0 +1,124 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "AppointmentLetterExtraction",
+  "description": "Structured output schema for extracting information from an appointment letter or confirmation document.",
+  "type": "object",
+  "properties": {
+    "document_type": {
+      "type": "string",
+      "const": "appointment_letter",
+      "description": "Always 'appointment_letter' for this schema."
+    },
+    "source_file": {
+      "type": "string",
+      "description": "Original filename or upload identifier."
+    },
+    "appointment_type": {
+      "type": ["string", "null"],
+      "description": "Type of appointment or procedure (e.g., 'knee surgery', 'MRI scan', 'physiotherapy'). Null if not found."
+    },
+    "appointment_date": {
+      "type": ["string", "null"],
+      "description": "Date of the appointment in original document format. Null if not specified."
+    },
+    "appointment_time": {
+      "type": ["string", "null"],
+      "description": "Time of the appointment. Null if not specified."
+    },
+    "location": {
+      "type": ["string", "null"],
+      "description": "Full location name and address. Null if not specified."
+    },
+    "department_or_ward": {
+      "type": ["string", "null"],
+      "description": "Specific department, ward, or clinic name. Null if not specified."
+    },
+    "clinician_name": {
+      "type": ["string", "null"],
+      "description": "Name of the doctor, specialist, or clinician. Null if not specified."
+    },
+    "preparation_requirements": {
+      "type": "array",
+      "description": "List of preparation steps the patient must take before the appointment.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "instruction": {
+            "type": "string",
+            "description": "The verbatim or near-verbatim preparation instruction from the document."
+          },
+          "timing": {
+            "type": ["string", "null"],
+            "description": "When this step must happen (e.g., 'the night before', 'from midnight', '2 hours before'). Null if not stated."
+          },
+          "category": {
+            "type": "string",
+            "enum": ["fasting", "medication", "items_to_bring", "transport", "clothing", "other"],
+            "description": "Category of preparation instruction."
+          }
+        },
+        "required": ["instruction", "category"]
+      }
+    },
+    "items_to_bring": {
+      "type": "array",
+      "description": "Items the patient must bring to the appointment.",
+      "items": {"type": "string"}
+    },
+    "medication_holds": {
+      "type": "array",
+      "description": "Any medications the patient is instructed to stop or modify before the appointment.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "medication": {"type": "string"},
+          "instruction": {"type": "string"},
+          "timing": {"type": ["string", "null"]}
+        },
+        "required": ["medication", "instruction"]
+      }
+    },
+    "accessibility_info": {
+      "type": "object",
+      "description": "Any accessibility or support information mentioned in the document.",
+      "properties": {
+        "parking": {"type": ["string", "null"]},
+        "interpreter_available": {"type": ["boolean", "null"]},
+        "wheelchair_access": {"type": ["boolean", "null"]},
+        "other": {"type": ["string", "null"]}
+      }
+    },
+    "contact_info": {
+      "type": "object",
+      "description": "Contact details for queries or cancellations.",
+      "properties": {
+        "phone": {"type": ["string", "null"]},
+        "department_email": {"type": ["string", "null"]},
+        "cancellation_deadline": {"type": ["string", "null"]}
+      }
+    },
+    "additional_notes": {
+      "type": ["string", "null"],
+      "description": "Any other clinically relevant information from the document not captured above. Null if nothing significant remains."
+    },
+    "extraction_confidence": {
+      "type": "string",
+      "enum": ["high", "medium", "low"],
+      "description": "Confidence level in the extraction. Use 'low' for poor-quality scans or heavily ambiguous text."
+    },
+    "missing_critical_fields": {
+      "type": "array",
+      "description": "List of fields that were not found in the document but are typically expected.",
+      "items": {"type": "string"}
+    }
+  },
+  "required": [
+    "document_type",
+    "source_file",
+    "appointment_type",
+    "appointment_date",
+    "preparation_requirements",
+    "extraction_confidence",
+    "missing_critical_fields"
+  ]
+}

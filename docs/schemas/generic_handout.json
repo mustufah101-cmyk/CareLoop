@@ -1,0 +1,77 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "GenericHandoutExtraction",
+  "description": "Fallback schema for documents that don't match appointment_letter or discharge_summary types. Also used for during-flow handouts captured at the visit.",
+  "type": "object",
+  "properties": {
+    "document_type": {
+      "type": "string",
+      "enum": ["generic_handout", "during_note", "prescription", "referral_letter", "unknown"],
+      "description": "Best-guess document type classification."
+    },
+    "source_file": {
+      "type": "string",
+      "description": "Original filename or upload identifier."
+    },
+    "probable_intended_type": {
+      "type": ["string", "null"],
+      "description": "If this document appears to be a billing statement, insurance form, or other non-clinical document, name it here so the UI can prompt the patient to re-upload."
+    },
+    "summary": {
+      "type": ["string", "null"],
+      "description": "A brief plain-language summary of what this document contains. Maximum 2 sentences."
+    },
+    "action_items": {
+      "type": "array",
+      "description": "Any explicit instructions or things the patient must do, extracted verbatim or near-verbatim.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "instruction": {"type": "string"},
+          "timing": {"type": ["string", "null"]}
+        },
+        "required": ["instruction"]
+      }
+    },
+    "general_info": {
+      "type": "array",
+      "description": "Informational content from the document (not actionable).",
+      "items": {"type": "string"}
+    },
+    "warning_signs": {
+      "type": "array",
+      "description": "Any explicitly stated warning signs from this document.",
+      "items": {"type": "string"}
+    },
+    "follow_up": {
+      "type": "array",
+      "description": "Any follow-up requirements mentioned.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "type": {"type": "string"},
+          "with": {"type": ["string", "null"]},
+          "timeframe": {"type": ["string", "null"]}
+        },
+        "required": ["type"]
+      }
+    },
+    "extraction_confidence": {
+      "type": "string",
+      "enum": ["high", "medium", "low"]
+    },
+    "missing_critical_fields": {
+      "type": "array",
+      "items": {"type": "string"}
+    }
+  },
+  "required": [
+    "document_type",
+    "source_file",
+    "action_items",
+    "general_info",
+    "warning_signs",
+    "extraction_confidence",
+    "missing_critical_fields"
+  ]
+}

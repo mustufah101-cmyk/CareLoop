@@ -1,0 +1,145 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "DischargeSummaryExtraction",
+  "description": "Structured output schema for extracting information from a discharge summary or after-visit summary document.",
+  "type": "object",
+  "properties": {
+    "document_type": {
+      "type": "string",
+      "const": "discharge_summary",
+      "description": "Always 'discharge_summary' for this schema."
+    },
+    "source_file": {
+      "type": "string",
+      "description": "Original filename or upload identifier."
+    },
+    "procedure": {
+      "type": ["string", "null"],
+      "description": "Name of the procedure or treatment that was performed. Null if not specified."
+    },
+    "date": {
+      "type": ["string", "null"],
+      "description": "Date of the procedure or discharge. Null if not specified."
+    },
+    "discharging_clinician": {
+      "type": ["string", "null"],
+      "description": "Name of the doctor or clinician who authored the discharge document. Null if not specified."
+    },
+    "facility": {
+      "type": ["string", "null"],
+      "description": "Hospital, clinic, or facility name. Null if not specified."
+    },
+    "medications": {
+      "type": "array",
+      "description": "All medications the patient is instructed to take post-discharge. Verbatim from document.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Medication name exactly as written in the document."
+          },
+          "dose": {
+            "type": ["string", "null"],
+            "description": "Dosage exactly as written. Null if not specified."
+          },
+          "frequency": {
+            "type": ["string", "null"],
+            "description": "How often to take it, exactly as written. Null if not specified."
+          },
+          "duration": {
+            "type": ["string", "null"],
+            "description": "How long to take it. Null if not specified."
+          },
+          "notes": {
+            "type": ["string", "null"],
+            "description": "Any special instructions (e.g., 'with food', 'not with alcohol'). Null if not specified."
+          }
+        },
+        "required": ["name"]
+      }
+    },
+    "activity_restrictions": {
+      "type": "array",
+      "description": "Physical activities or behaviours the patient must avoid or limit.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "restriction": {
+            "type": "string",
+            "description": "The restriction exactly as described."
+          },
+          "duration": {
+            "type": ["string", "null"],
+            "description": "How long the restriction applies. Null if not specified."
+          }
+        },
+        "required": ["restriction"]
+      }
+    },
+    "wound_care": {
+      "type": ["string", "null"],
+      "description": "Any wound care or dressing instructions. Null if not specified."
+    },
+    "diet_instructions": {
+      "type": ["string", "null"],
+      "description": "Any dietary instructions post-discharge. Null if not specified."
+    },
+    "follow_up": {
+      "type": "array",
+      "description": "Follow-up appointments or contacts required.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "Type of follow-up (e.g., 'appointment', 'phone call', 'blood test')."
+          },
+          "with": {
+            "type": ["string", "null"],
+            "description": "Who the follow-up is with (e.g., 'GP', 'orthopedic surgeon'). Null if not specified."
+          },
+          "timeframe": {
+            "type": ["string", "null"],
+            "description": "When the follow-up should happen (e.g., '2 weeks', 'in 10 days'). Null if not specified."
+          },
+          "contact": {
+            "type": ["string", "null"],
+            "description": "Phone number or contact for booking. Null if not specified."
+          }
+        },
+        "required": ["type"]
+      }
+    },
+    "warning_signs": {
+      "type": "array",
+      "description": "Symptoms or signs explicitly listed in the document as requiring the patient to contact their provider or seek help. CRITICAL: only include signs explicitly stated in the source document.",
+      "items": {"type": "string"}
+    },
+    "emergency_instructions": {
+      "type": ["string", "null"],
+      "description": "Any instructions about when to call emergency services (999/911) or go to A&E. Null if not specified."
+    },
+    "extraction_confidence": {
+      "type": "string",
+      "enum": ["high", "medium", "low"],
+      "description": "Confidence level in the extraction. Use 'low' for poor-quality scans or heavily ambiguous text."
+    },
+    "missing_critical_fields": {
+      "type": "array",
+      "description": "List of fields that were not found but are typically expected in a discharge summary.",
+      "items": {"type": "string"}
+    }
+  },
+  "required": [
+    "document_type",
+    "source_file",
+    "procedure",
+    "medications",
+    "activity_restrictions",
+    "follow_up",
+    "warning_signs",
+    "extraction_confidence",
+    "missing_critical_fields"
+  ]
+}
