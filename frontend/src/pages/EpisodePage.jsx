@@ -74,7 +74,7 @@ export function EpisodePage() {
           </p>
           <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-ink-muted)' }}>
             Make sure the backend is running:{' '}
-            <code>cd backend &amp;&amp; venv\Scripts\uvicorn.exe main:app --reload</code>
+            <code>cd backend && uvicorn main:app --reload</code>
           </p>
           <button
             className="btn btn--primary"
