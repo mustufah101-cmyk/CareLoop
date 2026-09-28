@@ -33,7 +33,7 @@ export function EpisodePage() {
         setEpisode(newEpisode)
       }
     } catch (err) {
-      setError(err.message || 'Failed to load. Is the backend running?')
+      setError(err.message || 'CareLoop could not load your care journey. Please try again.')
     } finally {
       setLoading(false)
     }
@@ -56,7 +56,7 @@ export function EpisodePage() {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
         <div style={{ textAlign: 'center' }}>
           <div style={{ fontSize: '2rem', marginBottom: 'var(--space-4)' }}>⏳</div>
-          <p style={{ color: 'var(--color-ink-muted)' }}>Loading your care episode…</p>
+          <p style={{ color: 'var(--color-ink-muted)' }}>Loading your care journey…</p>
         </div>
       </div>
     )
@@ -73,8 +73,7 @@ export function EpisodePage() {
             {error}
           </p>
           <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-ink-muted)' }}>
-            Make sure the backend is running:{' '}
-            <code>cd backend &amp;&amp; venv\Scripts\uvicorn.exe main:app --reload</code>
+            Please check that CareLoop is available, then try again.
           </p>
           <button
             className="btn btn--primary"

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useId, useState } from 'react'
 
 /**
  * SourceTag — shown on every patient-facing element (non-negotiable per GEMINI.md)
@@ -6,6 +6,7 @@ import { useState } from 'react'
  */
 export function SourceTag({ sourceField, extractedJson, documentLabel = 'your care document' }) {
   const [open, setOpen] = useState(false)
+  const contentId = useId()
 
   // Try to pull the referenced field value from the extracted JSON
   const getFieldValue = () => {
@@ -33,16 +34,18 @@ export function SourceTag({ sourceField, extractedJson, documentLabel = 'your ca
   return (
     <div className="source-popover">
       <button
+        type="button"
         className="source-tag"
         onClick={() => setOpen(o => !o)}
         aria-expanded={open}
+        aria-controls={contentId}
         aria-label={sourceText + '. View the original extracted source information.'}
       >
         <span>{sourceText}</span>
         <span className="source-tag__icon" aria-hidden="true">›</span>
       </button>
       {open && (
-        <div className="source-popover__content" role="tooltip">
+        <div className="source-popover__content" id={contentId} role="region" aria-label="Original source information">
           <strong className="source-popover__title">
             Original source information
           </strong>

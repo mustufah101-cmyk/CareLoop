@@ -17,6 +17,7 @@ export function Timeline({ episode, onEpisodeUpdate }) {
   const [simulatingDay, setSimulatingDay] = useState(null)
   const [simulatedCheckin, setSimulatedCheckin] = useState(null)
   const [simulateDayInput, setSimulateDayInput] = useState('')
+  const [recentlyProcessedPhase, setRecentlyProcessedPhase] = useState(null)
 
   const handleSimulateDay = async () => {
     const day = parseInt(simulateDayInput, 10)
@@ -32,7 +33,8 @@ export function Timeline({ episode, onEpisodeUpdate }) {
     }
   }
 
-  const handleUploadComplete = (result) => {
+  const handleUploadComplete = (phase) => {
+    setRecentlyProcessedPhase(phase)
     // Refresh episode data after upload
     api.getEpisode(episode.episode_id).then(updated => onEpisodeUpdate?.(updated))
   }
@@ -69,7 +71,7 @@ export function Timeline({ episode, onEpisodeUpdate }) {
   }
   const phaseStatusLabel = (status) => ({
     completed: 'Completed',
-    current: 'Current step',
+    current: 'Current',
     upcoming: 'Upcoming',
   }[status])
   const activePhaseName = allPhasesComplete ? 'Check-ins are up to date' : phaseNames[activePhaseIndex]
@@ -89,7 +91,7 @@ export function Timeline({ episode, onEpisodeUpdate }) {
         </p>
         <p className="episode-header__progress">
           <span className="episode-header__progress-marker" aria-hidden="true">→</span>
-          Current step: <strong>{activePhaseName}</strong>
+          You are here: <strong>{activePhaseName}</strong>
         </p>
       </div>
 
@@ -108,14 +110,33 @@ export function Timeline({ episode, onEpisodeUpdate }) {
 
           {!hasBefore ? (
             <div className="phase-empty">
+              {recentlyProcessedPhase === 'before' && (
+                <div className="phase-success" role="status" aria-live="polite">
+                  <span className="phase-success__icon" aria-hidden="true">✓</span>
+                  <div>
+                    <strong>Care document processed</strong>
+                    <p>Your care journey is ready to review.</p>
+                  </div>
+                </div>
+              )}
+              <p className="phase-empty__message">Upload your appointment letter to see preparation steps and questions here.</p>
               <DocumentUpload
                 episodeId={episode.episode_id}
                 label="Upload your appointment letter to get started"
-                onUploadComplete={handleUploadComplete}
+                onUploadComplete={() => handleUploadComplete('before')}
               />
             </div>
           ) : (
             <div>
+              {recentlyProcessedPhase === 'before' && (
+                <div className="phase-success" role="status" aria-live="polite">
+                  <span className="phase-success__icon" aria-hidden="true">✓</span>
+                  <div>
+                    <strong>Care document processed</strong>
+                    <p>Your care journey is ready to review.</p>
+                  </div>
+                </div>
+              )}
               {/* Checklist */}
               {episode.before.checklist?.length > 0 && (
                 <div style={{ marginBottom: 'var(--space-6)' }}>
@@ -172,7 +193,7 @@ export function Timeline({ episode, onEpisodeUpdate }) {
                 <div style={{ marginTop: 'var(--space-3)' }}>
                   <DocumentUpload
                     episodeId={episode.episode_id}
-                    onUploadComplete={handleUploadComplete}
+                    onUploadComplete={() => handleUploadComplete('before')}
                   />
                 </div>
               </details>
@@ -192,6 +213,7 @@ export function Timeline({ episode, onEpisodeUpdate }) {
 
           {!hasDuring ? (
             <div className="phase-empty">
+              <p className="phase-empty__message">Add notes from your appointment here to keep instructions in one place.</p>
               <DuringCapture
                 episodeId={episode.episode_id}
                 onCaptureComplete={handleDuringCapture}
@@ -259,14 +281,33 @@ export function Timeline({ episode, onEpisodeUpdate }) {
 
           {!hasAfter ? (
             <div className="phase-empty">
+              {recentlyProcessedPhase === 'after' && (
+                <div className="phase-success" role="status" aria-live="polite">
+                  <span className="phase-success__icon" aria-hidden="true">✓</span>
+                  <div>
+                    <strong>Care document processed</strong>
+                    <p>Your care journey is ready to review.</p>
+                  </div>
+                </div>
+              )}
+              <p className="phase-empty__message">Upload your discharge summary to build your recovery plan and follow-up details.</p>
               <DocumentUpload
                 episodeId={episode.episode_id}
                 label="Upload your discharge summary to generate a recovery plan"
-                onUploadComplete={handleUploadComplete}
+                onUploadComplete={() => handleUploadComplete('after')}
               />
             </div>
           ) : (
             <div>
+              {recentlyProcessedPhase === 'after' && (
+                <div className="phase-success" role="status" aria-live="polite">
+                  <span className="phase-success__icon" aria-hidden="true">✓</span>
+                  <div>
+                    <strong>Care document processed</strong>
+                    <p>Your care journey is ready to review.</p>
+                  </div>
+                </div>
+              )}
               {/* Medications summary */}
               {episode.after.medications_summary?.length > 0 && (
                 <div style={{ marginBottom: 'var(--space-6)' }}>
@@ -357,25 +398,19 @@ export function Timeline({ episode, onEpisodeUpdate }) {
 
           {!hasCheckins ? (
             <p className="phase-empty text-muted">
-              Check-ins will appear here once you upload your discharge summary.
+              Your scheduled check-ins will appear here after you upload your discharge summary.
             </p>
           ) : (
             <div>
               {/* ── Simulate Day N — Demo control ─────────────────────── */}
-              <div
-                style={{
-                  marginBottom: 'var(--space-6)',
-                  padding: 'var(--space-4)',
-                  background: '#FFFBEB',
-                  border: '1px solid #F4CA64',
-                  borderRadius: 'var(--radius-md)',
-                }}
-              >
+              <details className="demo-controls">
+                <summary>Demo controls</summary>
+                <div className="demo-controls__body">
                 <div className="demo-badge" style={{ marginBottom: 'var(--space-3)' }}>
                   🎮 Demo control
                 </div>
                 <p style={{ fontSize: 'var(--text-sm)', marginBottom: 'var(--space-3)', color: 'var(--color-ink-muted)' }}>
-                  In production, check-ins are sent automatically. For the demo, trigger one manually:
+                  These check-ins normally arrive automatically. For this demo, you can trigger one manually:
                 </p>
                 <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center', flexWrap: 'wrap' }}>
                   <label htmlFor="simulate-day" style={{ fontSize: 'var(--text-sm)', fontWeight: 500 }}>Simulate day</label>
@@ -408,7 +443,8 @@ export function Timeline({ episode, onEpisodeUpdate }) {
                 <p style={{ fontSize: 'var(--text-sm)', marginTop: 'var(--space-2)', color: 'var(--color-ink-muted)', fontStyle: 'italic' }}>
                   Available days: {episode.checkins.map(c => `Day ${c.scheduled_for_day}`).join(', ')}
                 </p>
-              </div>
+                </div>
+              </details>
 
               {/* Rendered check-in cards */}
               {episode.checkins

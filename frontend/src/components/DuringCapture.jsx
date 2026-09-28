@@ -65,15 +65,6 @@ export function DuringCapture({ episodeId, onCaptureComplete }) {
         </div>
       </form>
 
-      {/* Future: Photo capture for handouts */}
-      <details style={{ marginTop: 'var(--space-4)' }}>
-        <summary style={{ cursor: 'pointer', color: 'var(--color-ink-muted)', fontSize: 'var(--text-sm)' }}>
-          📷 Add a photo of a handout or whiteboard (coming soon)
-        </summary>
-        <p style={{ marginTop: 'var(--space-2)', fontSize: 'var(--text-sm)', color: 'var(--color-ink-muted)' }}>
-          Photo capture will extract text from handouts, whiteboards, or printed instruction sheets given during the visit.
-        </p>
-      </details>
     </div>
   )
 }

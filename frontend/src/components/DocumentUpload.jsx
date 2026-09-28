@@ -11,7 +11,7 @@ import { api } from '../api'
 export function DocumentUpload({ episodeId, onUploadComplete, label }) {
   const [state, setState] = useState('idle') // idle | drag | processing | error
   const [errorMessage, setErrorMessage] = useState(null)
-  const [processingLabel, setProcessingLabel] = useState('Reading your document…')
+  const [processingLabel, setProcessingLabel] = useState('Uploading your care document…')
   const fileInputRef = useRef(null)
   const hintId = useId()
 
@@ -19,14 +19,14 @@ export function DocumentUpload({ episodeId, onUploadComplete, label }) {
     if (!file) return
 
     setState('processing')
-    setProcessingLabel('Reading your document…')
+    setProcessingLabel('Uploading your care document…')
     setErrorMessage(null)
 
-    // Simulate progress stages for UX
+    // Rotate through honest, user-facing stages while the existing request runs.
     const stages = [
-      'Reading your document…',
-      'Extracting key information…',
-      'Building your care plan…',
+      'Uploading your care document…',
+      'Reading your care document…',
+      'Organising your care journey…',
     ]
     let stageIdx = 0
     const interval = setInterval(() => {
@@ -67,11 +67,11 @@ export function DocumentUpload({ episodeId, onUploadComplete, label }) {
     return (
       <div className="processing-state" role="status" aria-live="polite">
         <span style={{ fontSize: '1.5rem', display: 'block', marginBottom: 'var(--space-3)' }}>📄</span>
-        <p style={{ fontWeight: 500, marginBottom: 'var(--space-2)' }}>{processingLabel}</p>
+        <p className="processing-state__title">{processingLabel}</p>
         <div className="processing-bar" aria-hidden="true">
           <div className="processing-bar__fill" />
         </div>
-        <p className="text-muted">This usually takes 10–20 seconds</p>
+        <p className="text-muted">CareLoop is working on your document. You can stay on this page.</p>
       </div>
     )
   }
