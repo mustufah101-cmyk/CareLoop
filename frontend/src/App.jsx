@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import './index.css'
 import { EpisodePage } from './pages/EpisodePage'
 
@@ -10,15 +10,17 @@ function App() {
   const [largeText, setLargeText] = useState(false)
   const [highContrast, setHighContrast] = useState(false)
 
-  // Apply a11y classes to body
-  const bodyClasses = [
-    largeText ? 'a11y-large-text' : '',
-    highContrast ? 'a11y-high-contrast' : '',
-  ].filter(Boolean).join(' ')
+  // Apply a11y classes without replacing classes owned by the app shell.
+  useEffect(() => {
+    if (typeof document === 'undefined') return undefined
 
-  if (typeof document !== 'undefined') {
-    document.body.className = bodyClasses
-  }
+    document.body.classList.toggle('a11y-large-text', largeText)
+    document.body.classList.toggle('a11y-high-contrast', highContrast)
+
+    return () => {
+      document.body.classList.remove('a11y-large-text', 'a11y-high-contrast')
+    }
+  }, [largeText, highContrast])
 
   return (
     <>
@@ -28,10 +30,8 @@ function App() {
           <a href="/" className="nav__logo" aria-label="CareLoop home">
             CareLoop
           </a>
-          <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>
-            <span style={{ fontSize: 'var(--text-sm)', color: 'var(--color-ink-muted)' }}>
-              Accessibility:
-            </span>
+          <div className="nav__context">
+            <span className="nav__context-label">Accessible care, kept together</span>
           </div>
         </div>
       </nav>
@@ -43,8 +43,11 @@ function App() {
           onClick={() => setLargeText(t => !t)}
           aria-pressed={largeText}
           id="btn-large-text"
+          aria-label="Toggle large text"
+          title="Toggle large text"
         >
-          A+
+          <span aria-hidden="true">A+</span>
+          <span className="a11y-btn__label">Large text</span>
         </button>
         <button
           className={`a11y-btn ${highContrast ? 'a11y-btn--active' : ''}`}
@@ -52,7 +55,9 @@ function App() {
           aria-pressed={highContrast}
           id="btn-high-contrast"
           aria-label="Toggle high contrast"
+          title="Toggle high contrast"
         >
+          <span className="a11y-btn__label">High contrast</span>
           ◑
         </button>
       </div>

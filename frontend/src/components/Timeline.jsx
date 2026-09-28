@@ -50,6 +50,29 @@ export function Timeline({ episode, onEpisodeUpdate }) {
   const hasAfter = !!episode.after
   const hasDuring = episode.during?.length > 0
   const hasCheckins = episode.checkins?.length > 0
+  const checkinsComplete = hasCheckins && episode.checkins.every(checkin => checkin.response || checkin.simulated)
+  const phaseReady = [hasBefore, hasDuring, hasAfter, checkinsComplete]
+  const currentPhaseIndex = phaseReady.findIndex(ready => !ready)
+  const allPhasesComplete = currentPhaseIndex === -1
+  const activePhaseIndex = currentPhaseIndex === -1 ? phaseReady.length - 1 : currentPhaseIndex
+  const phaseNames = [
+    'Before your appointment',
+    'During your appointment',
+    'After your appointment',
+    'Check-ins',
+  ]
+  const phaseStatus = (index) => {
+    if (allPhasesComplete) return 'completed'
+    if (index < activePhaseIndex) return 'completed'
+    if (index === activePhaseIndex) return 'current'
+    return 'upcoming'
+  }
+  const phaseStatusLabel = (status) => ({
+    completed: 'Completed',
+    current: 'Current step',
+    upcoming: 'Upcoming',
+  }[status])
+  const activePhaseName = allPhasesComplete ? 'Check-ins are up to date' : phaseNames[activePhaseIndex]
 
   return (
     <div>
@@ -63,7 +86,10 @@ export function Timeline({ episode, onEpisodeUpdate }) {
           Started {new Date(episode.created_at).toLocaleDateString('en-GB', {
             day: 'numeric', month: 'long', year: 'numeric'
           })}
-          {' · '}Episode ID: <code style={{ fontSize: 'var(--text-sm)' }}>{episode.episode_id.slice(0, 8)}</code>
+        </p>
+        <p className="episode-header__progress">
+          <span className="episode-header__progress-marker" aria-hidden="true">→</span>
+          Current step: <strong>{activePhaseName}</strong>
         </p>
       </div>
 
@@ -71,14 +97,17 @@ export function Timeline({ episode, onEpisodeUpdate }) {
       <div className="timeline-layout">
 
         {/* ── BEFORE PHASE ──────────────────────────────────────────── */}
-        <div className="timeline-spine">
-          <div className={`timeline-dot ${hasBefore ? 'timeline-dot--filled' : ''}`} aria-hidden="true" />
+        <div className={'timeline-spine timeline-spine--' + phaseStatus(0)}>
+          <div className={'timeline-dot timeline-dot--' + phaseStatus(0)} aria-hidden="true" />
         </div>
-        <div className="timeline-content">
-          <p className="phase-label">Before the appointment</p>
+        <div className={'timeline-content timeline-phase timeline-phase--' + phaseStatus(0)} role="region" aria-labelledby="phase-before-heading">
+          <h2 className="phase-label" id="phase-before-heading">
+            <span className="phase-label__text">Before your appointment</span>
+            <span className={'phase-status phase-status--' + phaseStatus(0)}>{phaseStatusLabel(phaseStatus(0))}</span>
+          </h2>
 
           {!hasBefore ? (
-            <div>
+            <div className="phase-empty">
               <DocumentUpload
                 episodeId={episode.episode_id}
                 label="Upload your appointment letter to get started"
@@ -150,14 +179,17 @@ export function Timeline({ episode, onEpisodeUpdate }) {
         </div>
 
         {/* ── DURING PHASE ──────────────────────────────────────────── */}
-        <div className="timeline-spine">
-          <div className={`timeline-dot ${hasDuring ? 'timeline-dot--filled' : ''}`} aria-hidden="true" />
+        <div className={'timeline-spine timeline-spine--' + phaseStatus(1)}>
+          <div className={'timeline-dot timeline-dot--' + phaseStatus(1)} aria-hidden="true" />
         </div>
-        <div className="timeline-content">
-          <p className="phase-label">During the appointment</p>
+        <div className={'timeline-content timeline-phase timeline-phase--' + phaseStatus(1)} role="region" aria-labelledby="phase-during-heading">
+          <h2 className="phase-label" id="phase-during-heading">
+            <span className="phase-label__text">During your appointment</span>
+            <span className={'phase-status phase-status--' + phaseStatus(1)}>{phaseStatusLabel(phaseStatus(1))}</span>
+          </h2>
 
           {!hasDuring ? (
-            <div>
+            <div className="phase-empty">
               <DuringCapture
                 episodeId={episode.episode_id}
                 onCaptureComplete={handleDuringCapture}
@@ -214,14 +246,17 @@ export function Timeline({ episode, onEpisodeUpdate }) {
         </div>
 
         {/* ── AFTER PHASE ───────────────────────────────────────────── */}
-        <div className="timeline-spine">
-          <div className={`timeline-dot ${hasAfter ? 'timeline-dot--filled' : ''}`} aria-hidden="true" />
+        <div className={'timeline-spine timeline-spine--' + phaseStatus(2)}>
+          <div className={'timeline-dot timeline-dot--' + phaseStatus(2)} aria-hidden="true" />
         </div>
-        <div className="timeline-content">
-          <p className="phase-label">After the appointment</p>
+        <div className={'timeline-content timeline-phase timeline-phase--' + phaseStatus(2)} role="region" aria-labelledby="phase-after-heading">
+          <h2 className="phase-label" id="phase-after-heading">
+            <span className="phase-label__text">After your appointment</span>
+            <span className={'phase-status phase-status--' + phaseStatus(2)}>{phaseStatusLabel(phaseStatus(2))}</span>
+          </h2>
 
           {!hasAfter ? (
-            <div>
+            <div className="phase-empty">
               <DocumentUpload
                 episodeId={episode.episode_id}
                 label="Upload your discharge summary to generate a recovery plan"
@@ -306,14 +341,17 @@ export function Timeline({ episode, onEpisodeUpdate }) {
         </div>
 
         {/* ── CHECK-INS PHASE ───────────────────────────────────────── */}
-        <div className="timeline-spine">
-          <div className={`timeline-dot ${hasCheckins ? 'timeline-dot--filled' : ''}`} aria-hidden="true" />
+        <div className={'timeline-spine timeline-spine--' + phaseStatus(3)}>
+          <div className={'timeline-dot timeline-dot--' + phaseStatus(3)} aria-hidden="true" />
         </div>
-        <div className="timeline-content">
-          <p className="phase-label">Check-ins</p>
+        <div className={'timeline-content timeline-phase timeline-phase--' + phaseStatus(3)} role="region" aria-labelledby="phase-checkins-heading">
+          <h2 className="phase-label" id="phase-checkins-heading">
+            <span className="phase-label__text">Check-ins</span>
+            <span className={'phase-status phase-status--' + phaseStatus(3)}>{phaseStatusLabel(phaseStatus(3))}</span>
+          </h2>
 
           {!hasCheckins ? (
-            <p className="text-muted">
+            <p className="phase-empty text-muted">
               Check-ins will appear here once you upload your discharge summary.
             </p>
           ) : (
@@ -335,8 +373,9 @@ export function Timeline({ episode, onEpisodeUpdate }) {
                   In production, check-ins are sent automatically. For the demo, trigger one manually:
                 </p>
                 <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center', flexWrap: 'wrap' }}>
-                  <span style={{ fontSize: 'var(--text-sm)', fontWeight: 500 }}>Simulate Day</span>
+                  <label htmlFor="simulate-day" style={{ fontSize: 'var(--text-sm)', fontWeight: 500 }}>Simulate day</label>
                   <input
+                    id="simulate-day"
                     type="number"
                     min="1"
                     max="30"

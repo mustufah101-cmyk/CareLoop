@@ -32,8 +32,8 @@ export function DuringCapture({ episodeId, onCaptureComplete }) {
 
   return (
     <div>
-      <form onSubmit={handleSubmit} style={{ marginBottom: 'var(--space-6)' }}>
-        <label htmlFor="during-notes" style={{ display: 'block', marginBottom: 'var(--space-2)', fontWeight: 500 }}>
+      <form onSubmit={handleSubmit} className="capture-form">
+        <label htmlFor="during-notes" className="form-label">
           What did the clinician say? Any handouts or instructions?
         </label>
         <textarea
@@ -41,23 +41,11 @@ export function DuringCapture({ episodeId, onCaptureComplete }) {
           value={notes}
           onChange={e => setNotes(e.target.value)}
           placeholder="Type your notes here… e.g. 'Doctor said take new pills twice a day with food, no driving for a week. Got a handout about wound care.'"
-          style={{
-            width: '100%',
-            minHeight: 120,
-            padding: 'var(--space-3)',
-            border: '1px solid var(--color-line)',
-            borderRadius: 'var(--radius-md)',
-            fontFamily: 'inherit',
-            fontSize: 'var(--text-base)',
-            lineHeight: 'var(--line-height-body)',
-            resize: 'vertical',
-            background: 'var(--color-bg-raised)',
-            color: 'var(--color-ink)',
-          }}
+          className="form-control form-control--textarea"
           disabled={submitting}
           aria-describedby="during-notes-hint"
         />
-        <p id="during-notes-hint" style={{ fontSize: 'var(--text-sm)', color: 'var(--color-ink-muted)', marginTop: 'var(--space-2)' }}>
+        <p id="during-notes-hint" className="form-hint">
           Write in your own words. We'll organise this into a clear summary for your timeline.
         </p>
         {error && (

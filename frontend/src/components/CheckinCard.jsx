@@ -19,11 +19,13 @@ export function CheckinCard({ checkin, episodeId, onRespond, animDelay = 0 }) {
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(!!checkin.response)
   const [textResponse, setTextResponse] = useState('')
+  const [error, setError] = useState(null)
 
   const handleScaleSelect = async (val) => {
     if (submitted || submitting) return
     setSelected(val)
     setSubmitting(true)
+    setError(null)
 
     try {
       const result = await api.respondToCheckin(
@@ -36,6 +38,7 @@ export function CheckinCard({ checkin, episodeId, onRespond, animDelay = 0 }) {
       setSubmitted(true)
       onRespond?.(result)
     } catch (err) {
+      setError(err.message || 'Your response could not be saved. Please try again.')
       console.error('Failed to submit check-in response:', err)
     } finally {
       setSubmitting(false)
@@ -46,6 +49,7 @@ export function CheckinCard({ checkin, episodeId, onRespond, animDelay = 0 }) {
     if (submitted || submitting) return
     setSelected(val)
     setSubmitting(true)
+    setError(null)
 
     try {
       const result = await api.respondToCheckin(
@@ -58,6 +62,7 @@ export function CheckinCard({ checkin, episodeId, onRespond, animDelay = 0 }) {
       setSubmitted(true)
       onRespond?.(result)
     } catch (err) {
+      setError(err.message || 'Your response could not be saved. Please try again.')
       console.error('Failed to submit check-in response:', err)
     } finally {
       setSubmitting(false)
@@ -67,6 +72,7 @@ export function CheckinCard({ checkin, episodeId, onRespond, animDelay = 0 }) {
   const handleTextSubmit = async () => {
     if (submitted || submitting || !textResponse.trim()) return
     setSubmitting(true)
+    setError(null)
 
     try {
       const result = await api.respondToCheckin(
@@ -79,6 +85,7 @@ export function CheckinCard({ checkin, episodeId, onRespond, animDelay = 0 }) {
       setSubmitted(true)
       onRespond?.(result)
     } catch (err) {
+      setError(err.message || 'Your response could not be saved. Please try again.')
       console.error('Failed to submit check-in response:', err)
     } finally {
       setSubmitting(false)
@@ -147,8 +154,13 @@ export function CheckinCard({ checkin, episodeId, onRespond, animDelay = 0 }) {
       )}
 
       {checkin.response_type === 'text' && (
-        <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
+        <div className="checkin-text-response">
+          <label htmlFor={`checkin-response-${checkin.checkin_id}`} className="form-label">
+            Your response <span className="form-label__optional">(optional)</span>
+          </label>
           <textarea
+            id={`checkin-response-${checkin.checkin_id}`}
+            className="form-control form-control--textarea"
             value={textResponse}
             onChange={e => setTextResponse(e.target.value)}
             placeholder="Type your response here…"
@@ -180,6 +192,16 @@ export function CheckinCard({ checkin, episodeId, onRespond, animDelay = 0 }) {
       )}
 
       {/* Flagged state — shown only when backend confirms a warning sign match */}
+      {submitting && (
+        <p className="form-status" role="status" aria-live="polite">Saving your response…</p>
+      )}
+
+      {error && (
+        <div className="form-error" role="alert">
+          {error}
+        </div>
+      )}
+
       {isFlagged && matchedSign && (
         <div className="flag-alert" role="alert">
           <span className="flag-alert__icon" aria-hidden="true">⚠</span>

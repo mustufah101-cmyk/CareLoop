@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useId, useState, useRef } from 'react'
 import { api } from '../api'
 
 /**
@@ -13,6 +13,7 @@ export function DocumentUpload({ episodeId, onUploadComplete, label }) {
   const [errorMessage, setErrorMessage] = useState(null)
   const [processingLabel, setProcessingLabel] = useState('Reading your document…')
   const fileInputRef = useRef(null)
+  const hintId = useId()
 
   const processFile = async (file) => {
     if (!file) return
@@ -85,14 +86,23 @@ export function DocumentUpload({ episodeId, onUploadComplete, label }) {
         onDrop={handleDrop}
         role="button"
         tabIndex={0}
-        onKeyDown={(e) => e.key === 'Enter' && fileInputRef.current?.click()}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault()
+            fileInputRef.current?.click()
+          }
+        }}
         aria-label={`Upload a file: ${label || 'Drop a document or tap to browse'}`}
+        aria-describedby={hintId}
       >
         <span className="upload-zone__icon" aria-hidden="true">📁</span>
+        <span className="upload-zone__eyebrow">Upload a care document</span>
         <span className="upload-zone__label">
           {label || 'Drop a file or tap to upload'}
         </span>
-        <span className="upload-zone__hint">PDF, photo (JPEG/PNG), or text file</span>
+        <span className="upload-zone__hint" id={hintId}>
+          PDF, photo (JPEG/PNG), or text file. CareLoop will read it and organise the relevant details into your care journey.
+        </span>
       </div>
 
       <input
@@ -100,8 +110,8 @@ export function DocumentUpload({ episodeId, onUploadComplete, label }) {
         type="file"
         accept=".pdf,.jpg,.jpeg,.png,.webp,.txt"
         onChange={handleFileChange}
-        style={{ display: 'none' }}
-        aria-hidden="true"
+        className="visually-hidden"
+        aria-label="Choose a care document to upload"
       />
 
       {state === 'error' && errorMessage && (
