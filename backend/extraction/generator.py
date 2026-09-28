@@ -28,11 +28,13 @@ load_dotenv()
 
 # ── Client setup ─────────────────────────────────────────────────────────────
 
+# Only models that support vision (image/PDF input) - verified available
 _MODELS = [
+    "gemini-2.5-flash",
+    "gemini-2.5-pro",
     "gemini-flash-latest",
     "gemini-flash-lite-latest",
     "gemini-pro-latest",
-    "gemini-2.5-flash",
 ]
 
 
