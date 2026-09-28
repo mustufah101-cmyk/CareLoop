@@ -1,5 +1,104 @@
 # CareLoop Application Review
-**Date:** 2026-09-27  
+**Date:** 2026-09-27
+
+## Stage 1 UI and accessibility update — 2026-09-28
+
+The frontend UI foundation was polished without changing backend logic, API contracts, medical logic, extraction or generation behavior, check-in flagging, episode persistence, source-tag behavior, or the Before → During → After → Check-ins journey.
+
+Implemented and verified:
+
+- Wider centered content layout: the main timeline and episode header now use a 980px maximum width while remaining readable.
+- More consistent spacing and typography, with the small text token raised to 16px.
+- Simpler CareLoop header context while preserving the existing navigation.
+- Large-text and high-contrast controls retain their functionality and now have clearer accessible names, tooltips, visible labels, and 44px minimum sizing.
+- Visible focus treatment for buttons, controls, forms, and the upload zone.
+- Upload guidance now explains what can be uploaded and how CareLoop uses the document; Enter and Space activate the upload zone.
+- During-visit notes, check-in text responses, and the demo day input have visible labels.
+- Check-in submission failures and saving status are surfaced in the UI without changing the response API behavior.
+- Existing source tags and source traceability paths were preserved.
+- The timeline structure was not redesigned in this stage.
+
+Validation:
+
+- `npm.cmd run build` passes.
+- `npm.cmd run lint` completes with seven existing warnings in `EpisodePage.jsx`, `ActionItem.jsx`, `SourceTag.jsx`, and `Timeline.jsx`; no backend files were changed.
+
+## Stage 2 timeline hierarchy update — 2026-09-28
+
+The timeline hierarchy was redesigned within the existing frontend structure. No backend files, API contracts, data flow, medical logic, extraction/generation behavior, check-in flagging, persistence, or individual source-tag/content component behavior was changed.
+
+Implemented and verified:
+
+- Phase labels are sentence-case semantic headings: Before your appointment, During your appointment, After your appointment, and Check-ins.
+- The existing vertical spine is visually strengthened with distinct completed, current, and upcoming markers.
+- Status is communicated with text labels and marker symbols in addition to color.
+- Phase status is derived only from existing episode data: loaded phase content, scheduled check-ins, and existing responses/simulated check-ins.
+- The episode ID was removed from the patient-facing episode header.
+- The header now shows a subtle current-step indication without a percentage or claim about medical recovery.
+- Empty phases remain connected to the spine and receive an upcoming/empty treatment when applicable.
+- Mobile spacing and marker sizing were adjusted to keep the journey readable without excessive horizontal use.
+- Stage 1 accessibility controls, focus states, form labels, upload keyboard activation, source tags, and source traceability were preserved.
+
+## Stage 3 appearance, preferences, and card hierarchy update — 2026-09-28
+
+Stage 3 adds frontend-only appearance and accessibility preference controls plus clearer patient-facing card hierarchy. Backend logic, API contracts, medical logic, extraction/generation behavior, flagging, persistence, the four-phase journey, and source traceability behavior remain unchanged.
+
+Implemented and verified:
+
+- Light, dark, and system appearance modes are available from one accessible “Accessibility & appearance” panel.
+- System mode follows the operating system color-scheme preference through CSS media queries.
+- Appearance, large-text, and high-contrast preferences persist in localStorage when browser storage is available.
+- High contrast remains independent from dark mode, including a dedicated dark-plus-high-contrast palette.
+- Reduced-motion preferences disable the card stagger animation and minimize transitions.
+- Action, information, check-in, and warning cards now include visible type labels, symbols, borders, and spacing distinctions instead of relying on color alone.
+- Source tags use patient-facing wording such as “From your discharge summary” while their expansion still exposes the original extracted source value and field context.
+- The existing Stage 1/2 responsive timeline and accessibility focus behavior were preserved.
+
+QA note: the production frontend build passes and lint completes with the repository’s existing warnings. Interactive browser verification was not available in this environment; code-level checks covered the theme selectors, preference persistence, reduced-motion media query, responsive rules, source expansion markup, and card states.
+
+## Stage 4 demo polish and responsive refinement — 2026-09-28
+
+Stage 4 refines the existing frontend states without changing backend behavior, API contracts, medical wording, source grounding, flagging, persistence, or the Before → During → After → Check-ins structure.
+
+Implemented and verified:
+
+- Upload processing now uses honest user-facing stages: uploading the care document, reading the care document, and organising the care journey.
+- Processing uses an indeterminate visual treatment rather than a fabricated completion percentage, and reduced motion disables it.
+- Successful document refreshes show a calm “Care document processed” confirmation within the relevant timeline phase.
+- Before, During, After, and Check-ins empty states now explain what will appear and the next patient action.
+- Demo simulation is retained for judging but is collapsed under a clearly labeled “Demo controls” disclosure.
+- Existing timeline population animation remains short and is disabled/minimized under reduced motion.
+- Responsive refinements cover tablet and narrow mobile widths, including cards, upload areas, header controls, heading wrapping, and timeline spacing.
+- Patient-facing connection/loading copy no longer exposes backend startup terminology.
+
+Validation:
+
+- npm.cmd run build passes.
+- npm.cmd run lint completes with five existing warnings in EpisodePage.jsx, ActionItem.jsx, and Timeline.jsx.
+- git diff --check passes.
+- No backend files were modified.
+
+## Stage 5 final frontend QA and presentation polish — 2026-09-28
+
+Stage 5 is a frontend-only cleanup pass that preserves the Stage 1–4 journey, appearance preferences, accessibility behavior, source traceability, and all existing data/API behavior.
+
+Implemented and verified:
+
+- Removed the unfinished “Add a photo of a handout or whiteboard (coming soon)” control from the patient-facing During phase.
+- Kept demo-only simulation inside the existing collapsed “Demo controls” section.
+- Reduced phase-status repetition to the concise labels “Completed,” “Current,” and “Upcoming,” while retaining the separate “You are here” orientation message.
+- Improved source expansion semantics with explicit button type, controlled content IDs, and an accessible source-information region; original source fields remain visible.
+- Added theme-aware demo badge, primary-button hover, placeholder, and high-contrast styling for light, dark, system, large-text, and combined accessibility modes.
+- Replaced remaining application-authored backend startup wording with calm patient-facing connection guidance.
+- Preserved keyboard focus treatment, upload activation, source expansion, check-in controls, demo disclosure behavior, reduced motion, and responsive layout rules.
+
+Validation:
+
+- npm.cmd run build passes.
+- npm.cmd run lint completes with five existing warnings in EpisodePage.jsx, ActionItem.jsx, and Timeline.jsx.
+- git diff --check passes.
+- No backend files were modified.
+- Browser interactions were not claimed as tested; validation was code-level plus production build/lint/diff checks.
 **Status:** ✅ Application is in excellent condition
 
 ---
