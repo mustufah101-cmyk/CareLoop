@@ -5,7 +5,7 @@ import { SourceTag } from './SourceTag'
  * ActionItem — a checkable prep/recovery instruction
  * Spec: DESIGN.md §4.1
  */
-export function ActionItem({ item, timing, category, done: initialDone, sourceField, extractedJson, animDelay = 0 }) {
+export function ActionItem({ item, timing, category, done: initialDone, sourceField, extractedJson, sourceLabel, animDelay = 0 }) {
   const [done, setDone] = useState(initialDone || false)
   const id = `action-${Math.random().toString(36).slice(2)}`
 
@@ -25,6 +25,7 @@ export function ActionItem({ item, timing, category, done: initialDone, sourceFi
         aria-label={item}
       />
       <div className="action-item__text">
+        <span className="card-kind card-kind--action"><span aria-hidden="true">→</span>Action</span>
         <label className="action-item__label" htmlFor={id}>
           {item}
         </label>
@@ -32,7 +33,7 @@ export function ActionItem({ item, timing, category, done: initialDone, sourceFi
           <span className="action-item__timing">⏰ {timing}</span>
         )}
         {showSourceTag && (
-          <SourceTag sourceField={sourceField} extractedJson={extractedJson} />
+          <SourceTag sourceField={sourceField} extractedJson={extractedJson} documentLabel={sourceLabel} />
         )}
       </div>
     </div>

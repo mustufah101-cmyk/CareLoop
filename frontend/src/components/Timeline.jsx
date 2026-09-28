@@ -131,6 +131,7 @@ export function Timeline({ episode, onEpisodeUpdate }) {
                       done={item.done}
                       sourceField={item.source_field}
                       extractedJson={episode.documents.find(d => d.doc_type === 'appointment_letter')?.extracted_json}
+                      sourceLabel="your appointment letter"
                       animDelay={i}
                     />
                   ))}
@@ -156,6 +157,7 @@ export function Timeline({ episode, onEpisodeUpdate }) {
                       <SourceTag
                         sourceField={q.source_field}
                         extractedJson={episode.documents.find(d => d.doc_type === 'appointment_letter')?.extracted_json}
+                        documentLabel="your appointment letter"
                       />
                     </div>
                   ))}
@@ -279,6 +281,7 @@ export function Timeline({ episode, onEpisodeUpdate }) {
                       done={false}
                       sourceField={med.source_field}
                       extractedJson={episode.documents.find(d => d.doc_type === 'discharge_summary')?.extracted_json}
+                      sourceLabel="your discharge summary"
                       animDelay={i}
                     />
                   ))}
@@ -311,6 +314,7 @@ export function Timeline({ episode, onEpisodeUpdate }) {
                           done={false}
                           sourceField={instr.source_field}
                           extractedJson={episode.documents.find(d => d.doc_type === 'discharge_summary')?.extracted_json}
+                          sourceLabel="your discharge summary"
                           animDelay={mi + ii}
                         />
                       ))}
@@ -331,6 +335,7 @@ export function Timeline({ episode, onEpisodeUpdate }) {
                       text={`${f.plain_instruction}${f.timeframe ? ` — ${f.timeframe}` : ''}`}
                       sourceField={f.source_field}
                       extractedJson={episode.documents.find(d => d.doc_type === 'discharge_summary')?.extracted_json}
+                      documentLabel="your discharge summary"
                       animDelay={i}
                     />
                   ))}
@@ -413,6 +418,7 @@ export function Timeline({ episode, onEpisodeUpdate }) {
                     key={checkin.checkin_id}
                     checkin={checkin}
                     episodeId={episode.episode_id}
+                    documentLabel="your discharge summary"
                     onRespond={handleCheckinRespond}
                     animDelay={i}
                   />
@@ -424,6 +430,7 @@ export function Timeline({ episode, onEpisodeUpdate }) {
                 <CheckinCard
                   checkin={simulatedCheckin.checkin}
                   episodeId={episode.episode_id}
+                  documentLabel="your discharge summary"
                   onRespond={handleCheckinRespond}
                   animDelay={0}
                 />

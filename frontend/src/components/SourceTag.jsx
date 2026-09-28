@@ -1,10 +1,10 @@
-import { useState, useRef } from 'react'
+import { useState } from 'react'
 
 /**
  * SourceTag — shown on every patient-facing element (non-negotiable per GEMINI.md)
  * Tapping reveals the original extracted field verbatim.
  */
-export function SourceTag({ sourceField, extractedJson }) {
+export function SourceTag({ sourceField, extractedJson, documentLabel = 'your care document' }) {
   const [open, setOpen] = useState(false)
 
   // Try to pull the referenced field value from the extracted JSON
@@ -28,6 +28,7 @@ export function SourceTag({ sourceField, extractedJson }) {
 
   // Don't show source tag if we have no way to display the source
   if (!sourceField) return null
+  const sourceText = 'From ' + documentLabel
 
   return (
     <div className="source-popover">
@@ -35,18 +36,20 @@ export function SourceTag({ sourceField, extractedJson }) {
         className="source-tag"
         onClick={() => setOpen(o => !o)}
         aria-expanded={open}
-        aria-label={`Source: ${sourceField}. Tap to view original extracted field.`}
+        aria-label={sourceText + '. View the original extracted source information.'}
       >
-        <span>Source: {sourceField}</span>
+        <span>{sourceText}</span>
         <span className="source-tag__icon" aria-hidden="true">›</span>
       </button>
       {open && (
         <div className="source-popover__content" role="tooltip">
-          <strong style={{ display: 'block', marginBottom: '4px', opacity: 0.7, fontSize: '0.8em' }}>
-            Extracted from: {sourceField}
+          <strong className="source-popover__title">
+            Original source information
           </strong>
+          <span className="source-popover__document">{sourceText}</span>
+          <span className="source-popover__field">Source field: {sourceField}</span>
           {fieldValue
-            ? <code style={{ fontFamily: 'monospace', fontSize: '0.85em' }}>{fieldValue}</code>
+            ? <code className="source-popover__value">{fieldValue}</code>
             : <em style={{ opacity: 0.7 }}>Field value not available for preview</em>
           }
         </div>

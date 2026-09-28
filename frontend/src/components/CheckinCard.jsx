@@ -9,7 +9,7 @@ import { api } from '../api'
  * Flagging ONLY shows when the backend confirms a match against the
  * patient's own warning_signs — never client-side inference.
  */
-export function CheckinCard({ checkin, episodeId, onRespond, animDelay = 0 }) {
+export function CheckinCard({ checkin, episodeId, onRespond, documentLabel, animDelay = 0 }) {
   const [selected, setSelected] = useState(
     checkin.response ? checkin.response.response_value : null
   )
@@ -105,6 +105,10 @@ export function CheckinCard({ checkin, episodeId, onRespond, animDelay = 0 }) {
         </div>
       )}
 
+      <span className={`card-kind ${isFlagged ? 'card-kind--warning' : 'card-kind--checkin'}`}>
+        <span aria-hidden="true">{isFlagged ? '!' : '?'}</span>
+        {isFlagged ? 'Warning' : 'Check-in'}
+      </span>
       <p className="checkin-card__question">{checkin.prompt_text}</p>
 
       {checkin.response_type === 'scale_1_5' && (
@@ -215,7 +219,7 @@ export function CheckinCard({ checkin, episodeId, onRespond, animDelay = 0 }) {
         </div>
       )}
 
-      <SourceTag sourceField={checkin.source_field} extractedJson={null} />
+      <SourceTag sourceField={checkin.source_field} extractedJson={null} documentLabel={documentLabel} />
     </div>
   )
 }
