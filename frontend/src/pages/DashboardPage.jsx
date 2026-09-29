@@ -85,8 +85,8 @@ export function DashboardPage() {
             <div className="link-card link-card--copilot">
               <span className="card-kind card-kind--info"><span aria-hidden="true">i</span>Information</span>
               <h2 id="copilot-heading">CareLoop Copilot</h2>
-              <p>Copilot is a future way to find information already recorded in your care history and documents.</p>
-              <a className="btn btn--secondary" href={routeHref('/copilot')}>Explore Copilot</a>
+              <p>Find information already recorded in your care history, documents, notes, and check-ins.</p>
+              <a className="btn btn--secondary" href={routeHref('/copilot')}>Ask Copilot</a>
             </div>
           </section>
         </>

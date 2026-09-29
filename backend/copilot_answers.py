@@ -1,6 +1,7 @@
 """Grounded Copilot answer construction and post-generation validation."""
 
 import re
+from datetime import datetime
 from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -147,6 +148,13 @@ def _deterministic_response(
     generated_with_llm: bool = False,
     validation_passed: bool = True,
 ) -> CopilotAnswerResponse:
+    if grounding.intent == CopilotIntent.CARE_HISTORY_LOOKUP and grounding.evidence:
+        return _care_history_response(
+            grounding,
+            generated_with_llm=generated_with_llm,
+            validation_passed=validation_passed,
+        )
+
     segments: list[CopilotAnswerSegment] = []
     for item in grounding.evidence:
         segments.append(CopilotAnswerSegment(
@@ -172,6 +180,52 @@ def _deterministic_response(
         ),
     )
     return response
+
+
+def _care_history_response(
+    grounding: CopilotGroundingResult,
+    *,
+    generated_with_llm: bool,
+    validation_passed: bool,
+) -> CopilotAnswerResponse:
+    """Present recorded episode metadata without exposing storage timestamps."""
+    evidence_by_episode: dict[str, list[CopilotEvidence]] = {}
+    for item in grounding.evidence:
+        evidence_by_episode.setdefault(item.episode_id, []).append(item)
+
+    lines = [f"You have {len(evidence_by_episode)} recorded care journeys:"]
+    citation_ids: list[str] = []
+    for episode_evidence in evidence_by_episode.values():
+        appointment = next(
+            (item for item in episode_evidence if item.source_field == "appointment_type"),
+            None,
+        )
+        created = next(
+            (item for item in episode_evidence if item.source_field == "created_at"),
+            None,
+        )
+        title = _value_text(appointment.evidence_value) if appointment else "Care journey"
+        added_date = _human_date(created.evidence_value) if created else None
+        detail = f"{title} — added {added_date}" if added_date else title
+        lines.append(detail)
+        citation_ids.extend(item.evidence_id for item in episode_evidence)
+
+    segment = CopilotAnswerSegment(text="\n".join(lines), citation_ids=citation_ids)
+    return CopilotAnswerResponse(
+        answer=segment.text,
+        answer_type=CopilotAnswerType.GROUNDED,
+        supported=True,
+        intent=grounding.intent,
+        segments=[segment],
+        citations=_citations_for_segments([segment], grounding.evidence),
+        related_episode_ids=grounding.related_episode_ids,
+        safety=CopilotSafety(
+            medical_judgment_detected=grounding.medical_judgment_detected,
+            used_only_recorded_care=True,
+            generated_with_llm=generated_with_llm,
+            validation_passed=validation_passed,
+        ),
+    )
 
 
 def _unsupported_response(grounding: CopilotGroundingResult) -> CopilotAnswerResponse:
@@ -244,6 +298,19 @@ def _value_text(value: Any) -> str:
     if isinstance(value, list):
         return "; ".join(_value_text(item) for item in value)
     return str(value)
+
+
+def _human_date(value: Any) -> str | None:
+    if isinstance(value, datetime):
+        parsed = value
+    elif isinstance(value, str):
+        try:
+            parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+        except ValueError:
+            return None
+    else:
+        return None
+    return f"{parsed.strftime('%B')} {parsed.day}, {parsed.year}"
 
 
 def _contains_unsafe_medical_claim(text: str) -> bool:

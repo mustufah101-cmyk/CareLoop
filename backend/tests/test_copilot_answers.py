@@ -103,7 +103,19 @@ class CopilotAnswerTests(unittest.IsolatedAsyncioTestCase):
     async def test_care_history_answer(self):
         result = await self.get_answer("What care journeys do I have recorded?")
         self.assertIn("Knee surgery", result.answer)
+        self.assertIn("added September 1, 2026", result.answer)
+        self.assertNotIn("T12:00:00", result.answer)
         self.assertEqual(result.intent, CopilotIntent.CARE_HISTORY_LOOKUP)
+
+    async def test_care_history_answer_uses_fallback_title_and_preserves_episode_sources(self):
+        records = [
+            episode("episode-one", appointment_type="Knee surgery"),
+            episode("episode-two"),
+        ]
+        result = await self.get_answer("What care journeys do I have recorded?", records)
+        self.assertIn("Knee surgery — added September 1, 2026", result.answer)
+        self.assertIn("Care journey — added September 1, 2026", result.answer)
+        self.assertEqual({item.episode_id for item in result.citations}, {"episode-one", "episode-two"})
 
     async def test_checkin_answer(self):
         result = await self.get_answer("What check-ins are recorded?")

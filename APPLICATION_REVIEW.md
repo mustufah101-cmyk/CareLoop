@@ -235,9 +235,71 @@ Validation:
 - `git diff --check` passes.
 - No frontend files were modified and no conversation persistence was added.
 
+## Stage 9D Copilot frontend — 2026-09-29
+
+Stage 9D replaces the Copilot placeholder with a frontend-only chat interface backed by the existing `POST /api/copilot/ask` contract. Backend grounding, answer validation, provenance, and safety behavior remain unchanged.
+
+Implemented:
+
+- Added `api.askCopilot`, preserving the structured answer response including answer type, intent, segments, citations, safety metadata, and related episode IDs.
+- Added frontend-held conversation state. Each question is independently grounded; prior assistant messages are not sent back to the backend.
+- Added visible scope messaging that Copilot searches recorded CareLoop information and does not diagnose or recommend treatment.
+- Added real suggested-question buttons, labeled question input, Enter-to-send, Shift+Enter new lines, 2,000-character limit, blank-submit prevention, loading state, retryable network/server error state, and duplicate-submit protection.
+- Added distinct grounded, not-found, unsupported, and server-error presentation without treating unsupported medical questions as application errors.
+- Added dedicated expandable citation UI with patient-friendly provenance, verbatim versus recorded-information wording, optional filenames, source fields, and “View care journey” links.
+- Added response focus management, live status announcements, keyboard-operable suggestions and citations, visible focus states, and responsive mobile-safe chat layout.
+- Updated the Dashboard Copilot CTA to open the real Copilot page.
+- Preserved Light, Dark, System, Large Text, High Contrast, reduced-motion support, Dashboard/Care Journey/episode navigation, and existing source traceability.
+
+Validation:
+
+- Frontend production build passes.
+- Frontend lint completes with five existing warnings in ActionItem.jsx, Timeline.jsx, and the pre-existing EpisodePage.jsx effect; no lint errors were added by the Copilot UI.
+- Backend Copilot suite passes with 54 tests after the frontend changes.
+- `git diff --check` passes.
+- Browser and screen-reader interactions were not claimed as manually tested; keyboard, focus, status, responsive, theme, and citation behavior were reviewed in code.
+- No backend files were modified for Stage 9D and no conversation persistence was added.
+
+## Stage 9E Copilot UI simplification and conversation polish — 2026-09-29
+
+Stage 9E refines the existing Copilot frontend without changing the backend contract or safety behavior. The empty state is now a lightweight question prompt with compact suggested-question chips, and the conversation view uses a compact CareLoop identity plus an expandable Suggestions control.
+
+- Removed the large scope and empty-state information cards from the patient-facing flow.
+- Kept the composer as the primary interaction, with a soft bordered multiline input, integrated send action, Enter/Shift+Enter guidance, near-limit character count, and a concise safety boundary.
+- Added reduced-motion-aware prompt entrance animation, compact unsupported/not-found follow-up actions, and a calm network-error retry state.
+- Kept citations expandable and provenance-preserving; multiple citations are summarized as a source count while individual evidence remains available on demand.
+- Preserved keyboard operation, focus movement to new answers, appearance modes, high contrast, large text, mobile safe-area spacing, and all existing Copilot API behavior.
+- No backend files, API contracts, medical logic, persistence, or source-grounding rules were changed for Stage 9E.
+
+Validation for this stage: frontend production build passed; lint passed with the same five pre-existing warnings in unrelated files; `git diff --check` passed; and the unchanged backend suite passed all 54 tests. Browser and screen-reader interactions were not claimed as manually tested.
+
+## Stage 10A Copilot visual refinement — 2026-09-29
+
+Stage 10A is a frontend-only visual pass over the existing Copilot interaction. It does not change Copilot grounding, answer generation, safety behavior, citations, suggestions, retry behavior, or accessibility settings.
+
+- Refined the composer into one soft, focus-ringed control with an integrated compact send arrow, preserved disabled/loading behavior, and constrained textarea growth.
+- Kept the live status announcement for assistive technology while removing redundant visible response-ready text, recorded-care-only text, and the duplicate Care Journey link.
+- Simplified user attribution to “You,” reduced response surface boxing, and kept the CareLoop marker and directly associated expandable citations.
+- Preserved compact Suggestions chips, automatic collapse after selection, keyboard focus behavior, reduced-motion handling, mobile bottom-navigation spacing, and theme/high-contrast compatibility.
+- No backend files or API contracts were modified.
+
+Validation for this stage: frontend production build, lint, `git diff --check`, and the unchanged backend Copilot suite are required and recorded after implementation. Browser and screen-reader interactions were not claimed as manually tested.
+
 **Status:** ✅ Application is in excellent condition
 
 ---
+
+## Stage 10B Copilot micro-polish and patient-friendly deterministic output — 2026-09-30
+
+Stage 10B refines the Copilot composer and message spacing, and updates only deterministic care-history answer assembly. Grounding, safety classification, provenance, citations, unsupported/not-found behavior, and API contracts remain unchanged.
+
+- The composer now uses a compact, non-resizable textarea with controlled auto-growth, internal scrolling after its maximum height, safe text padding, and comfortable send-button placement.
+- Improved user and CareLoop message breathing room, line height, citation spacing, grouped source summaries, and expanded evidence/link spacing without making the conversation overly card-like.
+- Deterministic care-history responses now use recorded appointment types, the `Care journey` fallback when absent, and human-readable added dates instead of raw ISO timestamps. Each episode's metadata evidence remains cited.
+- Added regression coverage for human-readable dates, fallback episode titles, and per-episode citation preservation.
+- No frontend API behavior or Copilot safety/grounding rules changed. Backend files modified: `backend/copilot_answers.py` for deterministic presentation formatting and `backend/tests/test_copilot_answers.py` for regression coverage.
+
+Validation: frontend production build passed; lint passed with five pre-existing warnings; all 55 backend tests passed; and `git diff --check` passed. Browser and screen-reader interactions were not claimed as manually tested.
 
 ## Executive Summary
 

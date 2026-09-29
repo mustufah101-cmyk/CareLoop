@@ -48,6 +48,15 @@ export const api = {
 
   listEpisodes: (patientId) => request(`/episodes?patient_id=${encodeURIComponent(patientId)}`),
 
+  askCopilot: (patientId, question, episodeIds) => request('/copilot/ask', {
+    method: 'POST',
+    body: JSON.stringify({
+      patient_id: patientId,
+      question,
+      ...(episodeIds ? { episode_ids: episodeIds } : {}),
+    }),
+  }),
+
   // ── Documents ─────────────────────────────────────────────────────────────
 
   uploadDocument: (episodeId, file) => {
