@@ -20,7 +20,7 @@ function NavigationLink({ link, route, mobile = false }) {
   )
 }
 
-export function AppNavigation({ route, appearance, setAppearance, largeText, setLargeText, highContrast, setHighContrast }) {
+export function AppNavigation({ route, appearance, setAppearance, largeText, setLargeText, highContrast, setHighContrast, simpleMode, setSimpleMode }) {
   const [preferencesOpen, setPreferencesOpen] = useState(false)
 
   return (
@@ -58,8 +58,9 @@ export function AppNavigation({ route, appearance, setAppearance, largeText, set
                   <div className="preference-options preference-options--stacked">
                     <button type="button" className={'preference-option preference-option--wide ' + (largeText ? 'preference-option--selected' : '')} aria-pressed={largeText} onClick={() => setLargeText(value => !value)}><span aria-hidden="true">A+</span><span>Large text</span></button>
                     <button type="button" className={'preference-option preference-option--wide ' + (highContrast ? 'preference-option--selected' : '')} aria-pressed={highContrast} onClick={() => setHighContrast(value => !value)}><span aria-hidden="true">◑</span><span>High contrast</span></button>
-                  </div>
-                </div>
+                     <button type="button" className={'preference-option preference-option--wide ' + (simpleMode ? 'preference-option--selected' : '')} aria-pressed={simpleMode} onClick={() => setSimpleMode(value => !value)}><span aria-hidden="true">☰</span><span>Simple mode</span></button>
+                   </div>
+                 </div>
               </div>
             )}
           </div>

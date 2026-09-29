@@ -301,6 +301,30 @@ Stage 10B refines the Copilot composer and message spacing, and updates only det
 
 Validation: frontend production build passed; lint passed with five pre-existing warnings; all 55 backend tests passed; and `git diff --check` passed. Browser and screen-reader interactions were not claimed as manually tested.
 
+## Stage 10C Trace My Care Plan and patient-facing source disclosures — 2026-09-30
+
+Stage 10C adds a clearer “Why am I seeing this?” disclosure to grounded timeline content. It keeps the underlying source field and extracted value available without exposing raw JSON or developer-oriented field names.
+
+- Source disclosures now distinguish clinician-provided documents, patient-entered notes, check-ins, and CareLoop records using labels and icons.
+- The trace panel can show a friendly source label, document filename when available, patient-facing field name, recorded versus verbatim wording, the recorded information, and how it was used in the care plan.
+- Action items, information cards, suggested questions, check-ins, and patient-note-derived content retain accessible provenance actions without competing with the primary instruction.
+- Missing source details use neutral “Not specified” treatment and explicitly avoid guessing. The disclosure supports keyboard focus, Escape, close control, visible focus, large text, high contrast, dark mode, reduced motion, and mobile-safe positioning.
+- No backend files or backend behavior were modified for Stage 10C. Existing backend tests remain unchanged.
+
+Validation: frontend production build passed; lint passed with five pre-existing warnings; all 55 backend tests passed; and `git diff --check` passed. Browser and screen-reader interactions were not claimed as manually tested.
+
+## Stage 10D Simple Mode — 2026-09-30
+
+Stage 10D adds an optional, persistent Simple Mode preference. It is independent from Large Text, High Contrast, and Light/Dark/System appearance, and is applied globally through the existing application shell.
+
+- Added a keyboard-accessible, pressed-state Simple Mode control in Accessibility and appearance settings, persisted in localStorage.
+- Reduced secondary copy and metadata density across Dashboard, Care Journey, the episode timeline, and Copilot while preserving the Before → During → After → Check-ins structure.
+- Increased spacing and primary content prominence for action cards, information cards, check-ins, journey entries, and suggested questions.
+- Preserved all medical instructions, warning/flagged content, document controls, source traceability, Copilot safety behavior, and API/data flow.
+- Simple Mode combines with Large Text, High Contrast, Light/Dark/System, reduced motion, keyboard focus, and mobile layout rules.
+
+Validation: frontend production build and lint passed with the same five pre-existing warnings; all 55 backend tests passed; and `git diff --check` passed. Browser and screen-reader interactions were not claimed as manually tested.
+
 ## Executive Summary
 
 Your CareLoop application is **well-architected and ready for demo**. The codebase follows the specifications in GEMINI.md and DESIGN.md consistently. I've reviewed all components and found the implementation to be solid.

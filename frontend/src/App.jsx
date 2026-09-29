@@ -11,6 +11,7 @@ import { NotFoundPage } from './pages/NotFoundPage'
 const APPEARANCE_STORAGE_KEY = 'careloop-appearance'
 const LARGE_TEXT_STORAGE_KEY = 'careloop-large-text'
 const HIGH_CONTRAST_STORAGE_KEY = 'careloop-high-contrast'
+const SIMPLE_MODE_STORAGE_KEY = 'careloop-simple-mode'
 
 function readStoredBoolean(key) {
   if (typeof window === 'undefined') return false
@@ -30,16 +31,18 @@ function App() {
   const [appearance, setAppearance] = useState(readStoredAppearance)
   const [largeText, setLargeText] = useState(() => readStoredBoolean(LARGE_TEXT_STORAGE_KEY))
   const [highContrast, setHighContrast] = useState(() => readStoredBoolean(HIGH_CONTRAST_STORAGE_KEY))
+  const [simpleMode, setSimpleMode] = useState(() => readStoredBoolean(SIMPLE_MODE_STORAGE_KEY))
 
   useEffect(() => {
     try {
       window.localStorage.setItem(APPEARANCE_STORAGE_KEY, appearance)
       window.localStorage.setItem(LARGE_TEXT_STORAGE_KEY, String(largeText))
       window.localStorage.setItem(HIGH_CONTRAST_STORAGE_KEY, String(highContrast))
+      window.localStorage.setItem(SIMPLE_MODE_STORAGE_KEY, String(simpleMode))
     } catch {
       // Preferences remain session-only when browser storage is unavailable.
     }
-  }, [appearance, largeText, highContrast])
+  }, [appearance, largeText, highContrast, simpleMode])
 
   useEffect(() => {
     document.documentElement.dataset.theme = appearance
@@ -49,8 +52,9 @@ function App() {
   useEffect(() => {
     document.body.classList.toggle('a11y-large-text', largeText)
     document.body.classList.toggle('a11y-high-contrast', highContrast)
-    return () => document.body.classList.remove('a11y-large-text', 'a11y-high-contrast')
-  }, [largeText, highContrast])
+    document.body.classList.toggle('a11y-simple-mode', simpleMode)
+    return () => document.body.classList.remove('a11y-large-text', 'a11y-high-contrast', 'a11y-simple-mode')
+  }, [largeText, highContrast, simpleMode])
 
   let page
   if (route.name === 'dashboard') page = <DashboardPage />
@@ -69,6 +73,8 @@ function App() {
         setLargeText={setLargeText}
         highContrast={highContrast}
         setHighContrast={setHighContrast}
+        simpleMode={simpleMode}
+        setSimpleMode={setSimpleMode}
       />
       <main id="main-content" className="app-main">{page}</main>
     </>

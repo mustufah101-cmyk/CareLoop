@@ -5,12 +5,9 @@ import { SourceTag } from './SourceTag'
  * ActionItem — a checkable prep/recovery instruction
  * Spec: DESIGN.md §4.1
  */
-export function ActionItem({ item, timing, category, done: initialDone, sourceField, extractedJson, sourceLabel, animDelay = 0 }) {
+export function ActionItem({ item, timing, category, done: initialDone, sourceField, extractedJson, sourceLabel, sourceDocument, animDelay = 0 }) {
   const [done, setDone] = useState(initialDone || false)
   const id = `action-${Math.random().toString(36).slice(2)}`
-
-  // For patient_note source, we don't have extractedJson
-  const showSourceTag = sourceField !== 'patient_note'
 
   return (
     <div
@@ -32,9 +29,7 @@ export function ActionItem({ item, timing, category, done: initialDone, sourceFi
         {timing && (
           <span className="action-item__timing">⏰ {timing}</span>
         )}
-        {showSourceTag && (
-          <SourceTag sourceField={sourceField} extractedJson={extractedJson} documentLabel={sourceLabel} />
-        )}
+        <SourceTag sourceField={sourceField} extractedJson={extractedJson} documentLabel={sourceLabel} documentName={sourceDocument?.file_name} displayText={item} />
       </div>
     </div>
   )

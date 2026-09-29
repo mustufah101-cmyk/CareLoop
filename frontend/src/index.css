@@ -3014,3 +3014,274 @@ p, li {
     padding-right: 3.5rem;
   }
 }
+
+/* Stage 10C patient-facing provenance disclosure */
+.source-tag {
+  min-height: 44px;
+  padding: var(--space-2) 0;
+  color: var(--color-ink-muted);
+  font-weight: 600;
+}
+
+.source-tag:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 3px;
+  border-radius: var(--radius-sm);
+}
+
+.source-popover__content {
+  display: grid;
+  gap: var(--space-3);
+  max-width: min(360px, calc(100vw - 2rem));
+  min-width: min(260px, calc(100vw - 2rem));
+  padding: var(--space-4);
+  background: var(--color-bg-raised);
+  color: var(--color-ink);
+  border: 1px solid var(--color-line);
+  box-shadow: 0 4px 16px rgba(43, 43, 38, 0.16);
+  white-space: normal;
+}
+
+.source-popover__content:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.source-popover__content::after {
+  border-top-color: var(--color-line);
+}
+
+.source-popover__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.source-popover__title {
+  margin: 0;
+  color: var(--color-ink);
+  font-size: var(--text-base);
+}
+
+.source-popover__close {
+  display: inline-grid;
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
+  place-items: center;
+  margin: -var(--space-2) -var(--space-2) 0 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--color-ink-muted);
+  font-size: 1.35rem;
+  cursor: pointer;
+}
+
+.source-popover__close:hover,
+.source-popover__close:focus-visible {
+  background: var(--color-info-bg);
+  color: var(--color-ink);
+}
+
+.source-popover__document,
+.source-popover__filename,
+.source-popover__field,
+.source-popover__kind,
+.source-popover__value,
+.source-popover__used {
+  display: grid;
+  gap: var(--space-1);
+  margin: 0;
+  color: var(--color-ink);
+  font-size: var(--text-sm);
+  line-height: var(--line-height-body);
+}
+
+.source-popover__document strong,
+.source-popover__filename strong,
+.source-popover__field strong,
+.source-popover__kind strong,
+.source-popover__value strong,
+.source-popover__used strong {
+  color: var(--color-ink-muted);
+  font-size: 0.85em;
+  font-weight: 700;
+}
+
+.source-popover__value {
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-line);
+}
+
+.source-popover__value--missing {
+  color: var(--color-ink-muted);
+}
+
+.source-popover__used {
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-line);
+}
+
+@media (max-width: 600px) {
+  .source-popover__content {
+    position: fixed;
+    right: var(--space-3);
+    bottom: calc(76px + env(safe-area-inset-bottom));
+    left: var(--space-3);
+    width: auto;
+    max-width: none;
+    min-width: 0;
+  }
+
+  .source-popover__content::after {
+    display: none;
+  }
+}
+
+/* Stage 10D Simple Mode: reduce density without hiding care or safety information. */
+body.a11y-simple-mode .page-intro > p:last-child,
+body.a11y-simple-mode .section-heading-row > div > p,
+body.a11y-simple-mode .dashboard-copilot > .link-card > p,
+body.a11y-simple-mode .care-journey-page .page-intro > div > p:last-child,
+body.a11y-simple-mode .copilot-page .copilot-empty__heading > div > p {
+  display: none;
+}
+
+body.a11y-simple-mode .timeline-phase {
+  padding-bottom: var(--space-8);
+}
+
+body.a11y-simple-mode .phase-label {
+  margin-bottom: var(--space-6);
+}
+
+body.a11y-simple-mode .episode-header__meta {
+  display: none;
+}
+
+body.a11y-simple-mode .action-item {
+  margin-bottom: var(--space-6);
+  padding: var(--space-6);
+}
+
+body.a11y-simple-mode .action-item__label {
+  display: block;
+  margin-top: var(--space-2);
+  font-size: var(--text-lg);
+  font-weight: 600;
+  line-height: var(--line-height-tight);
+}
+
+body.a11y-simple-mode .action-item__timing {
+  margin-top: var(--space-3);
+}
+
+body.a11y-simple-mode .card--info {
+  margin-bottom: var(--space-6);
+  padding: var(--space-6);
+}
+
+body.a11y-simple-mode .info-card__text {
+  margin-top: var(--space-3);
+  font-size: var(--text-lg);
+  line-height: var(--line-height-body);
+}
+
+body.a11y-simple-mode .checkin-card {
+  margin-bottom: var(--space-6);
+  padding: var(--space-6);
+}
+
+body.a11y-simple-mode .checkin-card__question {
+  margin: var(--space-4) 0 var(--space-6);
+  font-size: var(--text-lg);
+  line-height: var(--line-height-body);
+}
+
+body.a11y-simple-mode .scale-btn {
+  width: 58px;
+  height: 58px;
+}
+
+body.a11y-simple-mode .overview-grid {
+  grid-template-columns: 1fr;
+  gap: var(--space-3);
+}
+
+body.a11y-simple-mode .overview-stat {
+  min-height: 0;
+  padding: var(--space-4);
+}
+
+body.a11y-simple-mode .dashboard-recent-list,
+body.a11y-simple-mode .journey-history-list {
+  gap: var(--space-6);
+}
+
+body.a11y-simple-mode .episode-summary-card {
+  padding: var(--space-6);
+}
+
+body.a11y-simple-mode .episode-summary-card__details span:not(.episode-summary-card__flag) {
+  display: none;
+}
+
+body.a11y-simple-mode .episode-summary-card__details {
+  margin-bottom: var(--space-4);
+}
+
+body.a11y-simple-mode .dashboard-overview {
+  margin-bottom: var(--space-8);
+}
+
+body.a11y-simple-mode .dashboard-copilot .link-card {
+  min-height: 0;
+  padding: var(--space-6);
+}
+
+body.a11y-simple-mode .copilot-page .page-intro {
+  margin-bottom: var(--space-8);
+}
+
+body.a11y-simple-mode .copilot-suggestions__list,
+body.a11y-simple-mode .copilot-inline-suggestions {
+  gap: var(--space-3);
+}
+
+body.a11y-simple-mode .copilot-suggestion {
+  min-height: 48px;
+  padding: var(--space-3) var(--space-4);
+}
+
+body.a11y-simple-mode .source-tag {
+  color: var(--color-ink-muted);
+  font-size: var(--text-sm);
+}
+
+body.a11y-simple-mode .source-popover__content {
+  gap: var(--space-4);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.a11y-simple-mode *,
+  body.a11y-simple-mode *::before,
+  body.a11y-simple-mode *::after {
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media (max-width: 768px) {
+  body.a11y-simple-mode .action-item,
+  body.a11y-simple-mode .card--info,
+  body.a11y-simple-mode .checkin-card,
+  body.a11y-simple-mode .episode-summary-card {
+    padding: var(--space-5);
+  }
+
+  body.a11y-simple-mode .scale-btn {
+    width: 54px;
+    height: 54px;
+  }
+}

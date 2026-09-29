@@ -153,6 +153,7 @@ export function Timeline({ episode, onEpisodeUpdate }) {
                       sourceField={item.source_field}
                       extractedJson={episode.documents.find(d => d.doc_type === 'appointment_letter')?.extracted_json}
                       sourceLabel="your appointment letter"
+                      sourceDocument={episode.documents.find(d => d.doc_type === 'appointment_letter')}
                       animDelay={i}
                     />
                   ))}
@@ -179,6 +180,8 @@ export function Timeline({ episode, onEpisodeUpdate }) {
                         sourceField={q.source_field}
                         extractedJson={episode.documents.find(d => d.doc_type === 'appointment_letter')?.extracted_json}
                         documentLabel="your appointment letter"
+                        documentName={episode.documents.find(d => d.doc_type === 'appointment_letter')?.file_name}
+                        displayText={q.question}
                       />
                     </div>
                   ))}
@@ -323,6 +326,7 @@ export function Timeline({ episode, onEpisodeUpdate }) {
                       sourceField={med.source_field}
                       extractedJson={episode.documents.find(d => d.doc_type === 'discharge_summary')?.extracted_json}
                       sourceLabel="your discharge summary"
+                      sourceDocument={episode.documents.find(d => d.doc_type === 'discharge_summary')}
                       animDelay={i}
                     />
                   ))}
@@ -356,6 +360,7 @@ export function Timeline({ episode, onEpisodeUpdate }) {
                           sourceField={instr.source_field}
                           extractedJson={episode.documents.find(d => d.doc_type === 'discharge_summary')?.extracted_json}
                           sourceLabel="your discharge summary"
+                          sourceDocument={episode.documents.find(d => d.doc_type === 'discharge_summary')}
                           animDelay={mi + ii}
                         />
                       ))}
@@ -377,6 +382,7 @@ export function Timeline({ episode, onEpisodeUpdate }) {
                       sourceField={f.source_field}
                       extractedJson={episode.documents.find(d => d.doc_type === 'discharge_summary')?.extracted_json}
                       documentLabel="your discharge summary"
+                      sourceDocument={episode.documents.find(d => d.doc_type === 'discharge_summary')}
                       animDelay={i}
                     />
                   ))}
@@ -455,6 +461,7 @@ export function Timeline({ episode, onEpisodeUpdate }) {
                     checkin={checkin}
                     episodeId={episode.episode_id}
                     documentLabel="your discharge summary"
+                    sourceDocument={episode.documents.find(d => d.doc_type === 'discharge_summary')}
                     onRespond={handleCheckinRespond}
                     animDelay={i}
                   />
@@ -467,6 +474,7 @@ export function Timeline({ episode, onEpisodeUpdate }) {
                   checkin={simulatedCheckin.checkin}
                   episodeId={episode.episode_id}
                   documentLabel="your discharge summary"
+                  sourceDocument={episode.documents.find(d => d.doc_type === 'discharge_summary')}
                   onRespond={handleCheckinRespond}
                   animDelay={0}
                 />
