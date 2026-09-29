@@ -325,6 +325,17 @@ Stage 10D adds an optional, persistent Simple Mode preference. It is independent
 
 Validation: frontend production build and lint passed with the same five pre-existing warnings; all 55 backend tests passed; and `git diff --check` passed. Browser and screen-reader interactions were not claimed as manually tested.
 
+## Stage 10E grounded Dashboard Today view — 2026-09-30
+
+Stage 10E adds a Dashboard Today section using only an explicitly dated appointment field from extracted appointment-letter data. It does not reinterpret episode creation dates, relative check-in day offsets, reminders, local action state, or undated records.
+
+- Supported Today category: appointment records whose `appointment_date` is an unambiguous ISO calendar date matching the user's local date; appointment time is shown only when the same source explicitly provides it.
+- Intentionally omitted: check-ins, because the current model stores only `scheduled_for_day` relative to an episode rather than a calendar date; medication schedules, due tasks, deadlines, recovery status, and `created_at`-based events are also omitted.
+- Added calm empty and populated states, one primary View journey action per Today card, source traceability through the existing “Why am I seeing this?” disclosure, and Simple Mode emphasis.
+- No backend files, medical logic, API contracts, persistence, or check-in behavior were changed.
+
+Validation: frontend production build and lint passed with five pre-existing warnings; all 55 backend tests passed; and `git diff --check` passed. Browser and screen-reader interactions were not claimed as manually tested.
+
 ## Executive Summary
 
 Your CareLoop application is **well-architected and ready for demo**. The codebase follows the specifications in GEMINI.md and DESIGN.md consistently. I've reviewed all components and found the implementation to be solid.

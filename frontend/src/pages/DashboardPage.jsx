@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
 import { api } from '../api'
-import { DEMO_PATIENT_ID, getEpisodeSummary, getMostRecentlyAddedEpisode } from '../episodeData'
+import { DEMO_PATIENT_ID, formatTodayDate, getEpisodeSummary, getMostRecentlyAddedEpisode, getTodayItems } from '../episodeData'
 import { routeHref } from '../routing'
 import { EpisodeSummaryCard } from '../components/EpisodeSummaryCard'
+import { SourceTag } from '../components/SourceTag'
 
 export function DashboardPage() {
   const [episodes, setEpisodes] = useState([])
@@ -22,6 +23,7 @@ export function DashboardPage() {
   if (error) return <PageError message={error} />
 
   const recentEpisode = getMostRecentlyAddedEpisode(episodes)
+  const todayItems = getTodayItems(episodes)
   const summaries = episodes.map(getEpisodeSummary)
   const flaggedCheckins = summaries.reduce((total, summary) => total + summary.flaggedCheckinCount, 0)
   const recordedCheckins = summaries.reduce((total, summary) => total + summary.completedCheckinCount, 0)
@@ -40,6 +42,41 @@ export function DashboardPage() {
         <h1>Welcome to CareLoop</h1>
         <p>Keep your recorded care journeys, instructions, and check-ins together in one place.</p>
       </div>
+      <section className="dashboard-today" aria-labelledby="today-heading">
+        <div className="dashboard-today__heading">
+          <div>
+            <p className="page-intro__eyebrow">Grounded in your recorded care</p>
+            <h2 id="today-heading">Today</h2>
+          </div>
+          <time dateTime={new Date().toISOString().slice(0, 10)}>{formatTodayDate()}</time>
+        </div>
+        {todayItems.length > 0 ? (
+          <div className="dashboard-today__list">
+            <p className="dashboard-today__summary">{todayItems.length} appointment{todayItems.length === 1 ? '' : 's'} today</p>
+            {todayItems.map(item => (
+              <article className="today-item" key={`${item.episode.episode_id}-${item.document.doc_id}`}>
+                <span className="card-kind card-kind--info"><span aria-hidden="true">●</span>Appointment</span>
+                <h3>{item.episode.appointment_type || 'Appointment'}</h3>
+                <p className="today-item__date">{item.time ? `${item.time} · ` : ''}{formatTodayDate(item.date)}</p>
+                <p className="today-item__context">From your appointment letter · {item.episode.appointment_type || 'Your care journey'}</p>
+                <SourceTag
+                  sourceField="appointment_date"
+                  extractedJson={item.document.extracted_json}
+                  documentLabel="your appointment letter"
+                  documentName={item.document.file_name}
+                  displayText={item.episode.appointment_type || 'Appointment'}
+                />
+                <a className="btn btn--secondary" href={routeHref(`/care-journey/episode/${item.episode.episode_id}`)}>View journey</a>
+              </article>
+            ))}
+          </div>
+        ) : (
+          <div className="dashboard-today__empty">
+            <p>Nothing recorded for today.</p>
+            <a className="btn btn--ghost" href={routeHref('/care-journey')}>View your care journeys</a>
+          </div>
+        )}
+      </section>
       {episodes.length === 0 ? (
         <section className="page-empty card" aria-labelledby="dashboard-empty-heading">
           <span className="page-empty__icon" aria-hidden="true">◌</span>
