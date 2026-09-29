@@ -16,15 +16,19 @@ function createMessageId() {
   return `${Date.now()}-${Math.random().toString(16).slice(2)}`
 }
 
-export function CopilotPage() {
+export function CopilotPage({ initialQuestion = '' }) {
   const [messages, setMessages] = useState([])
-  const [question, setQuestion] = useState('')
+  const [question, setQuestion] = useState(initialQuestion)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState(null)
   const [statusMessage, setStatusMessage] = useState('')
   const [suggestionsOpen, setSuggestionsOpen] = useState(false)
   const lastResponseRef = useRef(null)
   const questionInputRef = useRef(null)
+
+  useEffect(() => {
+    if (initialQuestion) questionInputRef.current?.focus()
+  }, [initialQuestion])
 
   useEffect(() => {
     const latest = messages[messages.length - 1]
@@ -81,80 +85,75 @@ export function CopilotPage() {
 
   return (
     <div className="page-shell copilot-page">
-      <div className="page-intro">
-        <p className="page-intro__eyebrow">Your recorded care</p>
-        <h1>CareLoop Copilot</h1>
-        <p>Ask about information already recorded in your care.</p>
-      </div>
+      <section className="copilot-surface" aria-labelledby="copilot-heading">
+        <div className="page-intro">
+          <p className="page-intro__eyebrow">Your recorded care</p>
+          <h1 id="copilot-heading">CareLoop Copilot</h1>
+          <p>Ask about information already recorded in your care.</p>
+        </div>
 
-      <div className="copilot-status" aria-live="polite" aria-atomic="true">
-        {statusMessage}
-      </div>
+        <div className="copilot-status" aria-live="polite" aria-atomic="true">
+          {statusMessage}
+        </div>
 
-      {messages.length === 0 ? (
-        <section className="copilot-empty" aria-labelledby="copilot-empty-heading">
-          <div className="copilot-empty__heading">
-            <div>
-              <h2 id="copilot-empty-heading">What would you like to know?</h2>
-              <p>Ask about information already recorded in your care.</p>
+        {messages.length === 0 ? (
+          <section className="copilot-empty" aria-labelledby="suggestions-heading">
+            <div className="copilot-suggestions">
+              <h2 id="suggestions-heading">Suggested questions</h2>
+              <div className="copilot-suggestions__list">
+                {suggestedQuestions.map(prompt => (
+                  <button key={prompt} className="copilot-suggestion" type="button" onClick={() => askQuestion(prompt)} disabled={submitting}>
+                    {prompt}
+                  </button>
+                ))}
+              </div>
             </div>
+          </section>
+        ) : (
+          <section className="copilot-conversation" aria-label="Copilot conversation">
+            {messages.map((message, index) => (
+              <CopilotMessage
+                key={message.id}
+                message={message}
+                focusRef={index === messages.length - 1 && message.role === 'assistant' ? lastResponseRef : undefined}
+                onSuggestedQuestion={askQuestion}
+              />
+            ))}
+          </section>
+        )}
+
+        {submitting && (
+          <div className="copilot-loading" role="status" aria-live="polite">
+            <span className="copilot-loading__mark" aria-hidden="true">…</span>
+            <span>Looking through your recorded care…</span>
           </div>
-          <div className="copilot-suggestions" aria-labelledby="suggestions-heading">
-            <h3 id="suggestions-heading">Suggested questions</h3>
-            <div className="copilot-suggestions__list">
+        )}
+
+        {error && (
+          <div className="copilot-error" role="alert">
+            <div>
+              <strong>We could not reach CareLoop</strong>
+              <p>{error.message}</p>
+            </div>
+            <button className="btn btn--secondary" type="button" onClick={() => askQuestion(error.question, { retry: true })} disabled={submitting}>Try again</button>
+          </div>
+        )}
+
+        <form className="copilot-form" onSubmit={handleSubmit}>
+          <label className="form-label" htmlFor="copilot-question">Ask about your recorded care</label>
+          {messages.length > 0 && (
+            <div className="copilot-form__tools">
+              <button className="btn btn--ghost copilot-suggestions-toggle" type="button" aria-expanded={suggestionsOpen} aria-controls="copilot-inline-suggestions" onClick={() => setSuggestionsOpen(open => !open)} disabled={submitting}>Suggestions</button>
+            </div>
+          )}
+          {messages.length > 0 && suggestionsOpen && (
+            <div className="copilot-inline-suggestions" id="copilot-inline-suggestions" aria-label="Suggested questions">
               {suggestedQuestions.map(prompt => (
-                <button key={prompt} className="copilot-suggestion" type="button" onClick={() => askQuestion(prompt)} disabled={submitting}>
-                  {prompt}
-                </button>
+                <button key={prompt} className="copilot-suggestion" type="button" onClick={() => askQuestion(prompt)} disabled={submitting}>{prompt}</button>
               ))}
             </div>
-          </div>
-        </section>
-      ) : (
-        <section className="copilot-conversation" aria-label="Copilot conversation">
-          {messages.map((message, index) => (
-            <CopilotMessage
-              key={message.id}
-              message={message}
-              focusRef={index === messages.length - 1 && message.role === 'assistant' ? lastResponseRef : undefined}
-              onSuggestedQuestion={askQuestion}
-            />
-          ))}
-        </section>
-      )}
-
-      {submitting && (
-        <div className="copilot-loading" role="status" aria-live="polite">
-          <span className="copilot-loading__mark" aria-hidden="true">…</span>
-          <span>Looking through your recorded care…</span>
-        </div>
-      )}
-
-      {error && (
-        <div className="copilot-error" role="alert">
-          <div>
-            <strong>We could not reach CareLoop</strong>
-            <p>{error.message}</p>
-          </div>
-          <button className="btn btn--secondary" type="button" onClick={() => askQuestion(error.question, { retry: true })} disabled={submitting}>Try again</button>
-        </div>
-      )}
-
-      <form className="copilot-form" onSubmit={handleSubmit}>
-        <label className="form-label" htmlFor="copilot-question">Ask about your recorded care</label>
-        {messages.length > 0 && (
-          <div className="copilot-form__tools">
-            <button className="btn btn--ghost copilot-suggestions-toggle" type="button" aria-expanded={suggestionsOpen} aria-controls="copilot-inline-suggestions" onClick={() => setSuggestionsOpen(open => !open)} disabled={submitting}>Suggestions</button>
-          </div>
-        )}
-        {messages.length > 0 && suggestionsOpen && (
-          <div className="copilot-inline-suggestions" id="copilot-inline-suggestions" aria-label="Suggested questions">
-            {suggestedQuestions.map(prompt => (
-              <button key={prompt} className="copilot-suggestion" type="button" onClick={() => askQuestion(prompt)} disabled={submitting}>{prompt}</button>
-            ))}
-          </div>
-        )}
-        <div className="copilot-form__composer">
+          )}
+          <div className="copilot-form__composer">
         <textarea
           id="copilot-question"
           ref={questionInputRef}
@@ -170,13 +169,14 @@ export function CopilotPage() {
         <button className="btn btn--primary copilot-form__submit" type="submit" aria-label="Send question" title="Send question" disabled={submitting || !question.trim()}>
           {submitting ? '…' : '↑'}
         </button>
-        </div>
-        <div className="copilot-form__meta">
-          <p id="copilot-question-hint" className="form-hint">Press Enter to send. Press Shift+Enter for a new line.</p>
-          {question.length >= 1800 && <p id="copilot-question-count" className="copilot-form__count" aria-live="polite">{question.length}/{MAX_QUESTION_LENGTH}</p>}
-        </div>
-        <p className="copilot-form__boundary">CareLoop uses your recorded care and does not diagnose or recommend treatment.</p>
-      </form>
+          </div>
+          <div className="copilot-form__meta">
+            <p id="copilot-question-hint" className="form-hint">Press Enter to send. Press Shift+Enter for a new line.</p>
+            {question.length >= 1800 && <p id="copilot-question-count" className="copilot-form__count" aria-live="polite">{question.length}/{MAX_QUESTION_LENGTH}</p>}
+          </div>
+          <p className="copilot-form__boundary">CareLoop uses your recorded care and does not diagnose or recommend treatment.</p>
+        </form>
+      </section>
 
     </div>
   )

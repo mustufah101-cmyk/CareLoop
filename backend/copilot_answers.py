@@ -74,6 +74,20 @@ async def answer_copilot_question(
         )
 
 
+def copilot_generation_path(
+    request: CopilotAskRequest,
+    grounding: CopilotGroundingResult,
+) -> str:
+    """Return a safe metadata label for the answer execution path."""
+    if grounding.intent == CopilotIntent.UNSUPPORTED_MEDICAL_JUDGMENT:
+        return "unsupported"
+    if not grounding.evidence or not grounding.supported:
+        return "not_found"
+    if _needs_synthesis(request.question, grounding):
+        return "gemini"
+    return "deterministic"
+
+
 def validate_copilot_answer(
     response: CopilotAnswerResponse,
     grounding: CopilotGroundingResult,

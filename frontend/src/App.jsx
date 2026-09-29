@@ -60,7 +60,7 @@ function App() {
   if (route.name === 'dashboard') page = <DashboardPage />
   else if (route.name === 'care-journey') page = <CareJourneyPage />
   else if (route.name === 'episode') page = <EpisodePage key={route.episodeId} episodeId={route.episodeId} />
-  else if (route.name === 'copilot') page = <CopilotPage />
+  else if (route.name === 'copilot') page = <CopilotPage initialQuestion={route.initialQuestion} />
   else page = <NotFoundPage />
 
   return (
@@ -76,7 +76,7 @@ function App() {
         simpleMode={simpleMode}
         setSimpleMode={setSimpleMode}
       />
-      <main id="main-content" className="app-main">{page}</main>
+      <main id="main-content" key={route.path} className="app-main app-main--enter">{page}</main>
     </>
   )
 }

@@ -246,6 +246,35 @@ class CopilotAnswerTests(unittest.IsolatedAsyncioTestCase):
         mocked.assert_not_awaited()
         self.assertEqual(result.answer_type, CopilotAnswerType.GROUNDED)
 
+    async def test_synthesis_query_calls_llm_and_keeps_valid_citations(self):
+        records = [episode("episode-one", appointment_type="MRI scan"), episode("episode-two", appointment_type="Physiotherapy")]
+        generated = {
+            "answer_type": "grounded",
+            "supported": True,
+            "segments": [{
+                "text": "Your recorded care includes an MRI scan and physiotherapy journey.",
+                "citation_ids": [
+                    "episode-one:metadata:appointment_type",
+                    "episode-two:metadata:appointment_type",
+                ],
+            }],
+        }
+        mocked = AsyncMock(return_value=generated)
+        with patch("copilot_answers.generate_copilot_synthesis", new=mocked):
+            result = await self.get_answer("Summarize my recorded care history", records)
+        mocked.assert_awaited_once()
+        self.assertEqual(result.answer, generated["segments"][0]["text"])
+        self.assertTrue(result.safety.generated_with_llm)
+        self.assertTrue(result.safety.validation_passed)
+        self.assertEqual({item.episode_id for item in result.citations}, {"episode-one", "episode-two"})
+
+    async def test_unsupported_medical_question_does_not_call_llm(self):
+        mocked = AsyncMock()
+        with patch("copilot_answers.generate_copilot_synthesis", new=mocked):
+            result = await self.get_answer("Do I have an infection?", self.records)
+        mocked.assert_not_awaited()
+        self.assertEqual(result.answer_type, CopilotAnswerType.UNSUPPORTED)
+
 
 if __name__ == "__main__":
     unittest.main()

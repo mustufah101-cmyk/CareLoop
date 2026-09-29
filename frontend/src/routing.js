@@ -8,7 +8,9 @@ function normalisePath(path) {
 
 export function parseHash(hash = '') {
   const rawPath = hash.startsWith('#') ? hash.slice(1) : hash
-  const path = normalisePath(rawPath)
+  const [rawRoutePath, rawQuery = ''] = rawPath.split('?')
+  const path = normalisePath(rawRoutePath)
+  const query = new URLSearchParams(rawQuery)
   const parts = path.split('/').filter(Boolean).map(part => {
     try { return decodeURIComponent(part) } catch { return part }
   })
@@ -18,7 +20,10 @@ export function parseHash(hash = '') {
   if (parts[0] === 'care-journey' && parts[1] === 'episode' && parts[2]) {
     return { name: 'episode', episodeId: parts[2], path: `/care-journey/episode/${encodeURIComponent(parts[2])}` }
   }
-  if (parts[0] === 'copilot' && parts.length === 1) return { name: 'copilot', path: '/copilot' }
+  if (parts[0] === 'copilot' && parts.length === 1) {
+    const initialQuestion = query.get('question') || ''
+    return { name: 'copilot', path: '/copilot', initialQuestion }
+  }
   return { name: 'not-found', path }
 }
 

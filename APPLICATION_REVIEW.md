@@ -386,6 +386,205 @@ Validation:
 - Full pytest could not run because pytest is not installed in the available project environment; no test count is claimed. Added backend regression tests are ready for the configured test environment.
 - Browser and screen-reader interactions were not claimed as manually tested.
 
+## Stage 11A feature-freeze QA — 2026-09-30
+
+Stage 11A performed an integration and demo-readiness review across the Stage 1–10G implementation. No new product features were added and no concrete frontend, backend, grounding, provenance, or accessibility regression requiring a code fix was identified.
+
+Current implemented feature set includes:
+
+- Dashboard, Care Journey, Copilot shell, and existing episode detail routing.
+- Before → During → After → Check-ins timeline with question continuity into persisted During notes.
+- Grounded document upload, generated care content, check-ins, source disclosures, contextual check-in wording, and source-grounded flagging.
+- Deterministic and LLM-backed Copilot behavior constrained to recorded CareLoop data, with citations and unsupported/not-found handling.
+- Light, Dark, System, Large Text, High Contrast, Simple Mode, reduced-motion support, keyboard focus, and responsive layouts.
+
+Safety boundaries remain unchanged:
+
+- No diagnosis, treatment recommendation, medication adjustment, prognosis, or general-medical fallback.
+- No invented dates, tasks, recovery status, source values, clinician confirmation, or patient history.
+- Patient-entered notes remain patient-entered and are not treated as clinician-authored evidence.
+- Check-in flagging uses only warning criteria derived from the patient’s own extracted source documents.
+- Conflicting recorded evidence remains source-separated.
+
+Automated baseline:
+
+- Backend suite: 61 passed, 0 failed, 0 skipped.
+- Backend compilation: passed.
+- Frontend production build: passed.
+- Frontend lint: completed with five existing non-blocking warnings in ActionItem.jsx, EpisodePage.jsx, and Timeline.jsx.
+- `git diff --check`: passed.
+
+Manual QA status:
+
+- The requested browser walkthrough, viewport checks, keyboard-only checks, and appearance-mode interaction checks could not be executed because no in-app browser target was available in this environment. They are not claimed as manually tested.
+- Code-level review covered navigation structure, persistence paths, provenance boundaries, empty/loading/error states, focus semantics, mobile CSS, and reduced-motion rules.
+
+Known limitations:
+
+- The demo database currently contains only empty generic episodes; no fake records were added during QA.
+- Scheduling remains relative/demo-oriented (`scheduled_for_day` and Simulate Day), not a real calendar scheduler.
+- Browser and screen-reader validation remains outstanding before external demo sign-off.
+
+Feature-freeze assessment: automated checks are green and no demo-blocking code issue was found, but final readiness still requires the manual browser walkthrough in an environment with a working browser target and representative grounded demo data.
+
+## Final frontend UI polish — 2026-09-30
+
+Implemented a frontend-only presentation pass without changing backend logic, API behavior, medical logic, grounding, persistence, or source data.
+
+- Copilot now presents the heading, short description, suggestions, conversation, citations, safety boundary, and composer inside one rounded outlined surface.
+- Removed duplicated empty-state filler text while preserving grounded messages, citations, provenance, unsupported/not-found states, retry behavior, and accessibility semantics.
+- Copilot citations now use patient-facing labels such as “Date added,” “Warning signs,” “Follow-up information,” and “Recorded response” instead of exposing internal field names.
+- Dashboard primary sections now use calmer outlined containers for Today, Care overview, Follow-up activity, and CareLoop Copilot.
+- The Dashboard Copilot card shows one randomly selected question from a fixed grounded-question set. Selecting it opens Copilot and prefills the composer without submitting automatically.
+- Appearance-mode buttons have explicit readable hover, focus, active, and selected text colors across light, dark, system, and high-contrast combinations.
+- Simple Mode, Large Text, reduced motion, keyboard focus, mobile navigation, source traceability, and patient-facing safety copy are preserved.
+
+Validation:
+
+- Frontend production build passes.
+- Frontend lint completes with the same five existing non-blocking warnings; no new warnings were introduced by this polish pass.
+- `git diff --check` passes.
+- Backend files and API behavior were not modified.
+- Browser interactions were not manually claimed because no in-app browser target was available.
+
+## Final Dashboard and Copilot layout polish — 2026-09-30
+
+Implemented a frontend-only layout refinement without changing backend logic, API behavior, grounded data semantics, or medical functionality.
+
+- Dashboard content now uses a responsive two-column, two-row card grid on desktop/tablet: Today, Care overview, Follow-up activity, and CareLoop Copilot.
+- Recent care journeys remains a separate full-width section below the grid.
+- Dashboard cards use consistent borders, radius, padding, and reduced nested-card treatment while preserving grounded counts and Today behavior.
+- The Dashboard Copilot question now reuses the Copilot suggestion-chip class and theme/hover/focus treatment. It continues to navigate to Copilot and prefill without auto-submitting.
+- The Copilot composer textarea no longer renders its own border or outline; the outer composer owns the border and `:focus-within` focus ring.
+- Simple Mode, Large Text, High Contrast, Dark/System appearance, reduced motion, keyboard focus, and mobile collapse behavior are preserved.
+
+Validation:
+
+- Frontend production build passed.
+- Frontend lint completed with the same five existing non-blocking warnings.
+- Backend suite passed: 61 tests.
+- `git diff --check` passed.
+- No backend files were modified.
+
+## Dashboard and Copilot structural correction — 2026-09-30
+
+Applied the requested frontend-only structural correction without changing backend behavior or API contracts.
+
+- `DashboardPage.jsx` now renders exactly four direct dashboard panels inside one `dashboard-grid`: Today, Care overview, Follow-up activity, and CareLoop Copilot.
+- Recent care journeys is outside the grid and remains a full-width section below it.
+- The four panels use consistent shell sizing, padding, borders, radius, and responsive collapse behavior.
+- Care overview statistics no longer render as separate large nested cards; they remain lightweight internal columns within the single panel.
+- Follow-up activity and Copilot no longer rely on narrow or max-width inner shells.
+- The Dashboard suggested question uses the exact Copilot suggestion-chip class and no longer uses underlined-link presentation.
+- The Copilot textarea and its focus states explicitly remove inner border, outline, box-shadow, and background boundary; the outer composer remains the sole focus-within treatment.
+- Light/Dark/System appearance-button contrast, accessibility modes, and grounded data behavior remain unchanged.
+
+Validation:
+
+- Frontend production build passed.
+- Frontend lint completed with the same five existing non-blocking warnings.
+- Backend suite passed: 61 tests.
+- `git diff --check` passed.
+- No backend files were modified.
+
+## Stage 11B final motion system and visual polish — 2026-09-30
+
+Stage 11B adds frontend-only motion and consistency polish. Backend logic, medical behavior, grounding, persistence, routing behavior, and API contracts are unchanged.
+
+Implemented:
+
+- Added shared motion tokens and easing for a restrained, consistent system.
+- Added subtle route content entry while keeping persistent navigation stable.
+- Added short staggered entry for Dashboard panels and recent journey cards, with timeline delays capped to avoid slow reveals.
+- Added quiet entry and transition treatment for Copilot content, messages, suggestions, citations, source disclosures, controls, navigation, and the appearance panel.
+- Kept motion focused on opacity and small transforms; there is no bounce, pulse, large movement, or fake typing.
+- Preserved reduced-motion behavior by disabling the new animations and transforms when the operating system requests reduced motion.
+- Preserved existing keyboard focus, provenance, warning visibility, responsive layout, Simple Mode, and appearance combinations.
+
+Validation:
+
+- Frontend production build passed.
+- Frontend lint completed with the same five existing non-blocking warnings.
+- Backend test suite passed: 61 tests.
+- `git diff --check` passed.
+- No backend files were modified.
+- Browser animation QA was not manually performed because no in-app browser target was available in this environment.
+
+## Stage 11C final Copilot execution verification and background polish — 2026-09-30
+
+Stage 11C preserves Copilot behavior and adds metadata-only execution diagnostics plus a subtle application-shell background treatment.
+
+Copilot execution paths:
+
+- Direct supported lookups use deterministic answer construction and do not call Gemini.
+- Summary-style care-history or visit-note questions with multiple evidence items use the Gemini synthesis path.
+- Unsupported medical-judgment questions return the safe unsupported response without calling Gemini for a medical answer.
+- Evidence-free questions return the not-found response without calling Gemini.
+- The answer router now logs only request ID, intent, evidence count, answer type, generation path, and validation result. Patient questions, notes, document contents, and generated answers are not logged.
+
+Automated verification:
+
+- Tests prove deterministic queries do not call Gemini.
+- Tests prove a synthesis-required query calls the mocked Gemini generator and preserves valid evidence citations.
+- Existing tests continue to cover malformed output, nonexistent citations, unsafe generated claims, unsupported questions, and safe deterministic fallback behavior.
+- Full backend suite passed: 63 tests.
+- Backend compilation passed.
+
+Live provider verification was not performed. No `GEMINI_API_KEY` environment variable or `backend/.env` file was configured in this environment, and the normal test suite intentionally does not use paid/live network access. To verify locally, configure the key and submit a multi-record synthesis question such as “Summarize my recorded care history,” then confirm the metadata-only `copilot_answered` log reports `generation_path=gemini`; do not enable this as an automated test dependency.
+
+Background polish:
+
+- Added two to three very low-opacity radial CSS gradients at the global page-shell level using the existing CareLoop palette.
+- Added a separate muted dark/system treatment.
+- Disabled decorative gradients in High Contrast and reduced them in Simple Mode.
+- The gradients are static, non-interactive, and do not change layout or content contrast.
+
+Validation:
+
+- Frontend production build passed.
+- Frontend lint passed with the same five existing non-blocking warnings.
+- `git diff --check` passed.
+- No frontend API contracts or patient-facing Copilot safety behavior changed.
+
+## Final Copilot verification and background correction — 2026-09-30
+
+Provider configuration:
+
+- The required environment variable is `GEMINI_API_KEY`; its value was not printed or logged.
+- It is not present in the current environment, and `backend/.env` is absent.
+- The configured Gemini fallback sequence is `gemini-2.5-flash`, `gemini-2.5-pro`, `gemini-flash-latest`, `gemini-flash-lite-latest`, then `gemini-pro-latest`.
+
+Live Copilot verification:
+
+- Deterministic path verified: yes, through the full automated test suite.
+- Not-found path verified: yes, through the full automated test suite.
+- Live Gemini path verified: no. A real provider request could not be attempted because no `GEMINI_API_KEY` was configured. The mocked synthesis tests remain in place and do not prove live provider availability.
+- No artificial response delay was added; deterministic, unsupported, and not-found responses remain immediate, while Gemini responses use only actual provider latency.
+
+Background correction:
+
+- Light mode now uses a more visible but still low-opacity static green, blue-gray, and warm-neutral aurora treatment over the cream base.
+- Dark mode and dark System mode use separate muted teal and blue-gray gradients.
+- Simple Mode reduces gradient strength.
+- High Contrast disables the decorative gradients, including dark and System variants.
+- The background remains CSS-only, static, non-interactive, and behind the existing cards and content.
+
+Validation:
+
+- Backend tests passed: 63 tests.
+- Backend compilation passed.
+- Frontend production build passed.
+- Frontend lint passed with the same five existing non-blocking warnings.
+- `git diff --check` passed.
+
+## Final application background correction — 2026-09-30
+
+The application background now uses a more visible but still restrained static three-gradient aurora. The mint/teal upper-left glow, blue-gray upper-right glow, and faint warm lower glow remain CSS-only and do not change layout or application behavior.
+
+The background stack was reviewed: `html`, `body`, `#root`, `.app-main`, and `.page-shell` now explicitly preserve the page background rather than covering it with an opaque wrapper. Cards and panels remain raised/opaque as intended.
+
+Simple Mode reduces the gradient strength, while High Contrast disables decorative gradients entirely. Dark and System-dark modes use separate muted aurora values. Screenshot/browser validation was not completed because no in-app browser target was available; frontend build, lint, and `git diff --check` passed.
+
 ## Executive Summary
 
 Your CareLoop application is **well-architected and ready for demo**. The codebase follows the specifications in GEMINI.md and DESIGN.md consistently. I've reviewed all components and found the implementation to be solid.

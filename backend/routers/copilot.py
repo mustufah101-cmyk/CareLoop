@@ -9,7 +9,7 @@ from uuid import uuid4
 
 from fastapi import APIRouter, HTTPException, Request
 
-from copilot_answers import answer_copilot_question
+from copilot_answers import answer_copilot_question, copilot_generation_path
 from copilot_grounding import ground_from_storage
 from models import CopilotAnswerResponse, CopilotAskRequest, CopilotGroundingResult
 
@@ -64,12 +64,12 @@ async def ask_copilot_question(
         ) from None
 
     logger.info(
-        "copilot_answered request_id=%s intent=%s evidence_count=%d answer_type=%s llm_used=%s validation_passed=%s",
+        "copilot_answered request_id=%s intent=%s evidence_count=%d answer_type=%s generation_path=%s validation_result=%s",
         request_id,
         result.intent.value,
         len(result.citations),
         result.answer_type.value,
-        result.safety.generated_with_llm,
+        copilot_generation_path(body, grounding),
         result.safety.validation_passed,
     )
     return result

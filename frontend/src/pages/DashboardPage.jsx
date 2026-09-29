@@ -5,6 +5,13 @@ import { routeHref } from '../routing'
 import { EpisodeSummaryCard } from '../components/EpisodeSummaryCard'
 import { SourceTag } from '../components/SourceTag'
 
+const dashboardCopilotQuestions = [
+  'What follow-up information is recorded?',
+  'What warning signs were listed?',
+  'What care journeys do I have recorded?',
+]
+const dashboardCopilotQuestion = dashboardCopilotQuestions[Math.floor(Math.random() * dashboardCopilotQuestions.length)]
+
 export function DashboardPage() {
   const [episodes, setEpisodes] = useState([])
   const [loading, setLoading] = useState(true)
@@ -42,91 +49,92 @@ export function DashboardPage() {
         <h1>Welcome to CareLoop</h1>
         <p>Keep your recorded care journeys, instructions, and check-ins together in one place.</p>
       </div>
-      <section className="dashboard-today" aria-labelledby="today-heading">
-        <div className="dashboard-today__heading">
-          <div>
-            <p className="page-intro__eyebrow">Grounded in your recorded care</p>
-            <h2 id="today-heading">Today</h2>
+
+      <div className="dashboard-grid">
+        <section className="dashboard-today dashboard-panel" aria-labelledby="today-heading">
+          <div className="dashboard-today__heading">
+            <div>
+              <p className="page-intro__eyebrow">Grounded in your recorded care</p>
+              <h2 id="today-heading">Today</h2>
+            </div>
+            <time dateTime={new Date().toISOString().slice(0, 10)}>{formatTodayDate()}</time>
           </div>
-          <time dateTime={new Date().toISOString().slice(0, 10)}>{formatTodayDate()}</time>
-        </div>
-        {todayItems.length > 0 ? (
-          <div className="dashboard-today__list">
-            <p className="dashboard-today__summary">{todayItems.length} appointment{todayItems.length === 1 ? '' : 's'} today</p>
-            {todayItems.map(item => (
-              <article className="today-item" key={`${item.episode.episode_id}-${item.document.doc_id}`}>
-                <span className="card-kind card-kind--info"><span aria-hidden="true">●</span>Appointment</span>
-                <h3>{item.episode.appointment_type || 'Appointment'}</h3>
-                <p className="today-item__date">{item.time ? `${item.time} · ` : ''}{formatTodayDate(item.date)}</p>
-                <p className="today-item__context">From your appointment letter · {item.episode.appointment_type || 'Your care journey'}</p>
-                <SourceTag
-                  sourceField="appointment_date"
-                  extractedJson={item.document.extracted_json}
-                  documentLabel="your appointment letter"
-                  documentName={item.document.file_name}
-                  displayText={item.episode.appointment_type || 'Appointment'}
-                />
-                <a className="btn btn--secondary" href={routeHref(`/care-journey/episode/${item.episode.episode_id}`)}>View journey</a>
-              </article>
-            ))}
-          </div>
-        ) : (
-          <div className="dashboard-today__empty">
-            <p>Nothing recorded for today.</p>
-            <a className="btn btn--ghost" href={routeHref('/care-journey')}>View your care journeys</a>
-          </div>
-        )}
-      </section>
-      {episodes.length === 0 ? (
-        <section className="page-empty card" aria-labelledby="dashboard-empty-heading">
-          <span className="page-empty__icon" aria-hidden="true">◌</span>
-          <h2 id="dashboard-empty-heading">Your care journeys will appear here</h2>
-          <p>Start by opening Care Journey and adding a care document to a journey.</p>
-          <a className="btn btn--primary" href={routeHref('/care-journey')}>Open Care Journey</a>
+          {todayItems.length > 0 ? (
+            <div className="dashboard-today__list">
+              <p className="dashboard-today__summary">{todayItems.length} appointment{todayItems.length === 1 ? '' : 's'} today</p>
+              {todayItems.map(item => (
+                <article className="today-item" key={`${item.episode.episode_id}-${item.document.doc_id}`}>
+                  <span className="card-kind card-kind--info"><span aria-hidden="true">●</span>Appointment</span>
+                  <h3>{item.episode.appointment_type || 'Appointment'}</h3>
+                  <p className="today-item__date">{item.time ? `${item.time} · ` : ''}{formatTodayDate(item.date)}</p>
+                  <p className="today-item__context">From your appointment letter · {item.episode.appointment_type || 'Your care journey'}</p>
+                  <SourceTag
+                    sourceField="appointment_date"
+                    extractedJson={item.document.extracted_json}
+                    documentLabel="your appointment letter"
+                    documentName={item.document.file_name}
+                    displayText={item.episode.appointment_type || 'Appointment'}
+                  />
+                  <a className="btn btn--secondary" href={routeHref(`/care-journey/episode/${item.episode.episode_id}`)}>View journey</a>
+                </article>
+              ))}
+            </div>
+          ) : (
+            <div className="dashboard-today__empty">
+              <p>Nothing recorded for today.</p>
+              <a className="btn btn--ghost" href={routeHref('/care-journey')}>View your care journeys</a>
+            </div>
+          )}
         </section>
-      ) : (
-        <>
-          <section className="dashboard-overview" aria-labelledby="overview-heading">
+
+        <section className="dashboard-overview dashboard-panel" aria-labelledby="overview-heading">
             <h2 id="overview-heading">Care overview</h2>
             <div className="overview-grid">
               <div className="overview-stat"><strong>{episodes.length}</strong><span>Recorded care {episodes.length === 1 ? 'journey' : 'journeys'}</span></div>
               <div className="overview-stat"><strong>{recordedCheckins}</strong><span>Recorded check-ins</span></div>
               {flaggedCheckins > 0 && <div className="overview-stat overview-stat--flagged"><strong>{flaggedCheckins}</strong><span>Flagged check-ins</span></div>}
             </div>
-          </section>
-          <section className="dashboard-section" aria-labelledby="recent-heading">
-            <div className="section-heading-row">
-              <div><h2 id="recent-heading">Recent care journeys</h2><p className="text-muted">Your journeys are ordered by the date they were added when that date is available.</p></div>
-              <a className="btn btn--ghost" href={routeHref('/care-journey')}>View all journeys</a>
-            </div>
-            <div className="dashboard-recent-list">
-              {recentEpisodes.map(episode => <EpisodeSummaryCard key={episode.episode_id} episode={episode} compact isMostRecent={recentEpisode?.episode_id === episode.episode_id} />)}
-            </div>
-          </section>
+            {episodes.length === 0 && <>
+              <p className="dashboard-panel__supporting-copy">Your care journeys will appear here as you add them.</p>
+              <a className="btn btn--primary" href={routeHref('/care-journey')}>Open Care Journey</a>
+            </>}
+        </section>
 
-          <section className="dashboard-section dashboard-followup" aria-labelledby="followup-heading">
-            <h2 id="followup-heading">Follow-up activity</h2>
-            {recordedCheckins > 0 || flaggedCheckins > 0 ? (
-              <div className="activity-summary card">
-                <span className="card-kind card-kind--checkin"><span aria-hidden="true">?</span>Check-in activity</span>
-                <p>{recordedCheckins} completed check-in{recordedCheckins === 1 ? '' : 's'} are recorded across your care journeys.</p>
-                {flaggedCheckins > 0 && <p className="activity-summary__flag">{flaggedCheckins} flagged check-in{flaggedCheckins === 1 ? '' : 's'} are recorded. Open the relevant journey to review them.</p>}
-                <a className="btn btn--secondary" href={routeHref('/care-journey')}>Review care journeys</a>
+        <section className="dashboard-followup dashboard-panel" aria-labelledby="followup-heading">
+              <h2 id="followup-heading">Follow-up activity</h2>
+              {recordedCheckins > 0 || flaggedCheckins > 0 ? (
+                <div className="activity-summary">
+                  <span className="card-kind card-kind--checkin"><span aria-hidden="true">?</span>Check-in activity</span>
+                  <p>{recordedCheckins} completed check-in{recordedCheckins === 1 ? '' : 's'} are recorded across your care journeys.</p>
+                  {flaggedCheckins > 0 && <p className="activity-summary__flag">{flaggedCheckins} flagged check-in{flaggedCheckins === 1 ? '' : 's'} are recorded. Open the relevant journey to review them.</p>}
+                  <a className="btn btn--secondary" href={routeHref('/care-journey')}>Review care journeys</a>
+                </div>
+              ) : (
+                <div className="activity-summary"><p>No completed check-ins are recorded yet.</p><a className="btn btn--secondary" href={routeHref('/care-journey')}>View care journeys</a></div>
+              )}
+        </section>
+
+        <section className="dashboard-copilot dashboard-panel" aria-labelledby="copilot-heading">
+              <div className="link-card link-card--copilot">
+                <h2 id="copilot-heading">CareLoop Copilot</h2>
+                <p>Find information already recorded in your care history, documents, notes, and check-ins.</p>
+                <p className="dashboard-copilot__prompt-label">Try asking</p>
+                <a className="copilot-suggestion dashboard-copilot__suggestion" href={routeHref(`/copilot?question=${encodeURIComponent(dashboardCopilotQuestion)}`)}>{dashboardCopilotQuestion}</a>
+                <a className="btn btn--secondary" href={routeHref('/copilot')}>Ask Copilot</a>
               </div>
-            ) : (
-              <div className="activity-summary card"><p>No completed check-ins are recorded yet.</p><a className="btn btn--secondary" href={routeHref('/care-journey')}>View care journeys</a></div>
-            )}
-          </section>
+        </section>
+      </div>
 
-          <section className="dashboard-section dashboard-copilot" aria-labelledby="copilot-heading">
-            <div className="link-card link-card--copilot">
-              <span className="card-kind card-kind--info"><span aria-hidden="true">i</span>Information</span>
-              <h2 id="copilot-heading">CareLoop Copilot</h2>
-              <p>Find information already recorded in your care history, documents, notes, and check-ins.</p>
-              <a className="btn btn--secondary" href={routeHref('/copilot')}>Ask Copilot</a>
-            </div>
-          </section>
-        </>
+      {episodes.length > 0 && (
+        <section className="dashboard-section" aria-labelledby="recent-heading">
+          <div className="section-heading-row">
+            <div><h2 id="recent-heading">Recent care journeys</h2><p className="text-muted">Your journeys are ordered by the date they were added when that date is available.</p></div>
+            <a className="btn btn--ghost" href={routeHref('/care-journey')}>View all journeys</a>
+          </div>
+          <div className="dashboard-recent-list">
+            {recentEpisodes.map(episode => <EpisodeSummaryCard key={episode.episode_id} episode={episode} compact isMostRecent={recentEpisode?.episode_id === episode.episode_id} />)}
+          </div>
+        </section>
       )}
     </div>
   )

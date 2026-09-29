@@ -49,6 +49,10 @@
   /* Motion */
   --ease-standard: cubic-bezier(0.2, 0.8, 0.2, 1);
   --duration-standard: 240ms;
+  --motion-fast: 140ms;
+  --motion-normal: 200ms;
+  --motion-slow: 280ms;
+  --motion-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
 
   /* Timeline spine */
   --spine-width: 2px;
@@ -535,6 +539,7 @@
 html {
   font-size: var(--text-base);
   -webkit-text-size-adjust: 100%;
+  background: var(--color-bg);
 }
 
 body {
@@ -543,8 +548,90 @@ body {
   line-height: var(--line-height-body);
   color: var(--color-ink);
   background-color: var(--color-bg);
+  background-image:
+    radial-gradient(ellipse 42rem 30rem at 8% 4%, rgba(91, 150, 126, 0.36) 0%, rgba(91, 150, 126, 0.19) 35%, rgba(91, 150, 126, 0.07) 55%, transparent 78%),
+    radial-gradient(ellipse 46rem 32rem at 92% 10%, rgba(109, 133, 151, 0.27) 0%, rgba(109, 133, 151, 0.14) 35%, rgba(109, 133, 151, 0.05) 56%, transparent 78%),
+    radial-gradient(ellipse 48rem 30rem at 52% 108%, rgba(185, 153, 112, 0.16) 0%, rgba(185, 153, 112, 0.08) 38%, rgba(185, 153, 112, 0.03) 58%, transparent 80%),
+    radial-gradient(ellipse 22rem 16rem at 26% 42%, rgba(91, 150, 126, 0.11) 0%, rgba(91, 150, 126, 0.05) 42%, transparent 78%),
+    radial-gradient(ellipse 18rem 22rem at 78% 55%, rgba(109, 133, 151, 0.10) 0%, rgba(109, 133, 151, 0.045) 42%, transparent 80%),
+    radial-gradient(ellipse 24rem 18rem at 16% 84%, rgba(185, 153, 112, 0.09) 0%, rgba(185, 153, 112, 0.04) 42%, transparent 80%),
+    radial-gradient(ellipse 20rem 16rem at 88% 78%, rgba(73, 137, 111, 0.10) 0%, rgba(73, 137, 111, 0.045) 42%, transparent 78%);
+  background-attachment: fixed;
   min-height: 100vh;
   overflow-x: hidden;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-theme="system"] body {
+    background-image:
+      radial-gradient(ellipse 42rem 30rem at 8% 4%, rgba(73, 137, 111, 0.27) 0%, rgba(73, 137, 111, 0.14) 35%, rgba(73, 137, 111, 0.055) 55%, transparent 78%),
+      radial-gradient(ellipse 46rem 32rem at 92% 10%, rgba(83, 108, 126, 0.23) 0%, rgba(83, 108, 126, 0.12) 35%, rgba(83, 108, 126, 0.045) 56%, transparent 78%),
+      radial-gradient(ellipse 48rem 30rem at 52% 108%, rgba(126, 99, 72, 0.11) 0%, rgba(126, 99, 72, 0.055) 38%, transparent 80%),
+      radial-gradient(ellipse 22rem 16rem at 26% 42%, rgba(73, 137, 111, 0.11) 0%, rgba(73, 137, 111, 0.05) 42%, transparent 78%),
+      radial-gradient(ellipse 18rem 22rem at 78% 55%, rgba(83, 108, 126, 0.10) 0%, rgba(83, 108, 126, 0.045) 42%, transparent 80%),
+      radial-gradient(ellipse 24rem 18rem at 16% 84%, rgba(126, 99, 72, 0.08) 0%, rgba(126, 99, 72, 0.035) 42%, transparent 80%),
+      radial-gradient(ellipse 20rem 16rem at 88% 78%, rgba(73, 137, 111, 0.11) 0%, rgba(73, 137, 111, 0.05) 42%, transparent 78%);
+  }
+}
+
+:root[data-theme="dark"] body {
+  background-image:
+    radial-gradient(ellipse 42rem 30rem at 8% 4%, rgba(73, 137, 111, 0.27) 0%, rgba(73, 137, 111, 0.14) 35%, rgba(73, 137, 111, 0.055) 55%, transparent 78%),
+    radial-gradient(ellipse 46rem 32rem at 92% 10%, rgba(83, 108, 126, 0.23) 0%, rgba(83, 108, 126, 0.12) 35%, rgba(83, 108, 126, 0.045) 56%, transparent 78%),
+    radial-gradient(ellipse 48rem 30rem at 52% 108%, rgba(126, 99, 72, 0.11) 0%, rgba(126, 99, 72, 0.055) 38%, transparent 80%),
+    radial-gradient(ellipse 22rem 16rem at 26% 42%, rgba(73, 137, 111, 0.11) 0%, rgba(73, 137, 111, 0.05) 42%, transparent 78%),
+    radial-gradient(ellipse 18rem 22rem at 78% 55%, rgba(83, 108, 126, 0.10) 0%, rgba(83, 108, 126, 0.045) 42%, transparent 80%),
+    radial-gradient(ellipse 24rem 18rem at 16% 84%, rgba(126, 99, 72, 0.08) 0%, rgba(126, 99, 72, 0.035) 42%, transparent 80%),
+    radial-gradient(ellipse 20rem 16rem at 88% 78%, rgba(73, 137, 111, 0.11) 0%, rgba(73, 137, 111, 0.05) 42%, transparent 78%);
+}
+
+body.a11y-simple-mode {
+  background-image:
+    radial-gradient(ellipse 42rem 30rem at 8% 4%, rgba(91, 150, 126, 0.25) 0%, rgba(91, 150, 126, 0.13) 35%, rgba(91, 150, 126, 0.05) 55%, transparent 78%),
+    radial-gradient(ellipse 46rem 32rem at 92% 10%, rgba(109, 133, 151, 0.19) 0%, rgba(109, 133, 151, 0.10) 35%, rgba(109, 133, 151, 0.035) 56%, transparent 78%),
+    radial-gradient(ellipse 48rem 30rem at 52% 108%, rgba(185, 153, 112, 0.11) 0%, rgba(185, 153, 112, 0.055) 38%, transparent 80%),
+    radial-gradient(ellipse 22rem 16rem at 26% 42%, rgba(91, 150, 126, 0.075) 0%, rgba(91, 150, 126, 0.035) 42%, transparent 78%),
+    radial-gradient(ellipse 18rem 22rem at 78% 55%, rgba(109, 133, 151, 0.07) 0%, rgba(109, 133, 151, 0.03) 42%, transparent 80%),
+    radial-gradient(ellipse 24rem 18rem at 16% 84%, rgba(185, 153, 112, 0.06) 0%, rgba(185, 153, 112, 0.025) 42%, transparent 80%),
+    radial-gradient(ellipse 20rem 16rem at 88% 78%, rgba(73, 137, 111, 0.075) 0%, rgba(73, 137, 111, 0.035) 42%, transparent 78%);
+}
+
+:root[data-theme="dark"] body.a11y-simple-mode {
+  background-image:
+    radial-gradient(ellipse 42rem 30rem at 8% 4%, rgba(73, 137, 111, 0.19) 0%, rgba(73, 137, 111, 0.10) 35%, rgba(73, 137, 111, 0.04) 55%, transparent 78%),
+    radial-gradient(ellipse 46rem 32rem at 92% 10%, rgba(83, 108, 126, 0.16) 0%, rgba(83, 108, 126, 0.08) 35%, rgba(83, 108, 126, 0.03) 56%, transparent 78%),
+    radial-gradient(ellipse 48rem 30rem at 52% 108%, rgba(126, 99, 72, 0.075) 0%, rgba(126, 99, 72, 0.038) 38%, transparent 80%),
+    radial-gradient(ellipse 22rem 16rem at 26% 42%, rgba(73, 137, 111, 0.075) 0%, rgba(73, 137, 111, 0.035) 42%, transparent 78%),
+    radial-gradient(ellipse 18rem 22rem at 78% 55%, rgba(83, 108, 126, 0.07) 0%, rgba(83, 108, 126, 0.03) 42%, transparent 80%),
+    radial-gradient(ellipse 24rem 18rem at 16% 84%, rgba(126, 99, 72, 0.055) 0%, rgba(126, 99, 72, 0.022) 42%, transparent 80%),
+    radial-gradient(ellipse 20rem 16rem at 88% 78%, rgba(73, 137, 111, 0.08) 0%, rgba(73, 137, 111, 0.035) 42%, transparent 78%);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-theme="system"] body.a11y-simple-mode {
+    background-image:
+      radial-gradient(ellipse 42rem 30rem at 8% 4%, rgba(73, 137, 111, 0.19) 0%, rgba(73, 137, 111, 0.10) 35%, rgba(73, 137, 111, 0.04) 55%, transparent 78%),
+      radial-gradient(ellipse 46rem 32rem at 92% 10%, rgba(83, 108, 126, 0.16) 0%, rgba(83, 108, 126, 0.08) 35%, rgba(83, 108, 126, 0.03) 56%, transparent 78%),
+      radial-gradient(ellipse 48rem 30rem at 52% 108%, rgba(126, 99, 72, 0.075) 0%, rgba(126, 99, 72, 0.038) 38%, transparent 80%),
+      radial-gradient(ellipse 22rem 16rem at 26% 42%, rgba(73, 137, 111, 0.075) 0%, rgba(73, 137, 111, 0.035) 42%, transparent 78%),
+      radial-gradient(ellipse 18rem 22rem at 78% 55%, rgba(83, 108, 126, 0.07) 0%, rgba(83, 108, 126, 0.03) 42%, transparent 80%),
+      radial-gradient(ellipse 24rem 18rem at 16% 84%, rgba(126, 99, 72, 0.055) 0%, rgba(126, 99, 72, 0.022) 42%, transparent 80%),
+      radial-gradient(ellipse 20rem 16rem at 88% 78%, rgba(73, 137, 111, 0.08) 0%, rgba(73, 137, 111, 0.035) 42%, transparent 78%);
+  }
+}
+
+body.a11y-high-contrast {
+  background-image: none;
+}
+
+:root[data-theme="dark"] body.a11y-high-contrast {
+  background-image: none;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-theme="system"] body.a11y-high-contrast {
+    background-image: none;
+  }
 }
 
 button,
@@ -555,6 +642,7 @@ textarea {
 
 #root {
   min-height: 100vh;
+  background: transparent;
 }
 
 /* Focus ring — never removed, always visible */
@@ -1494,6 +1582,18 @@ p, li {
   color: var(--color-bg);
 }
 
+.preference-option:hover:not(.preference-option--selected),
+.preference-option:focus-visible:not(.preference-option--selected) {
+  color: var(--color-ink);
+}
+
+.preference-option--selected:hover,
+.preference-option--selected:focus-visible {
+  background: var(--color-action-hover);
+  border-color: var(--color-action-hover);
+  color: var(--color-bg);
+}
+
 .preference-option--wide {
   display: inline-flex;
   align-items: center;
@@ -1977,6 +2077,7 @@ p, li {
 /* ─── Stage 6 application shell and route pages ───────────────────────────── */
 .app-main {
   min-height: calc(100vh - 56px);
+  background: transparent;
 }
 
 .primary-nav {
@@ -2029,6 +2130,7 @@ p, li {
   width: min(980px, calc(100% - 2rem));
   margin: 0 auto;
   padding: var(--space-12) 0 var(--space-12);
+  background: transparent;
 }
 
 .page-intro {
@@ -2419,6 +2521,22 @@ p, li {
   margin-bottom: var(--space-8);
 }
 
+.dashboard-section-card {
+  padding: var(--space-6);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-raised);
+}
+
+.dashboard-section-card .link-card,
+.dashboard-section-card .activity-summary {
+  max-width: none;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
 .section-heading-row {
   display: flex;
   align-items: flex-end;
@@ -2466,6 +2584,29 @@ p, li {
 
 .link-card--copilot h2 {
   margin: 0;
+}
+
+.dashboard-copilot__prompt-label {
+  margin: var(--space-4) 0 var(--space-2);
+  color: var(--color-ink-muted);
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.dashboard-copilot__suggestion {
+  display: block;
+  width: fit-content;
+  max-width: 100%;
+  margin-bottom: var(--space-4);
+  color: var(--color-action);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.dashboard-copilot__suggestion:hover,
+.dashboard-copilot__suggestion:focus-visible {
+  color: var(--color-action-hover);
 }
 
 .longitudinal-history {
@@ -3563,8 +3704,369 @@ body.a11y-simple-mode .today-item .btn {
     padding: var(--space-5);
   }
 
-  body.a11y-simple-mode .scale-btn {
-    width: 54px;
-    height: 54px;
+body.a11y-simple-mode .scale-btn {
+  width: 54px;
+  height: 54px;
+}
+
+}
+
+/* Final Dashboard grid and Copilot composer cleanup. */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-6);
+  margin-bottom: var(--space-8);
+}
+
+.dashboard-panel {
+  min-width: 0;
+  min-height: 100%;
+  margin: 0;
+  padding: var(--space-6);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-raised);
+}
+
+.dashboard-panel h2 {
+  margin-bottom: var(--space-4);
+}
+
+.dashboard-panel .dashboard-today__heading {
+  margin-bottom: var(--space-4);
+}
+
+.dashboard-panel .overview-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 0;
+  gap: 0;
+  align-items: stretch;
+}
+
+.dashboard-overview .overview-stat {
+  display: grid;
+  grid-template-rows: auto minmax(2.75em, auto);
+  align-content: start;
+  align-items: start;
+  gap: var(--space-2);
+  min-height: 0;
+  padding: var(--space-2) var(--space-4);
+  border: 0;
+  border-left: 1px solid var(--color-line);
+  border-radius: 0;
+  background: transparent;
+}
+
+.dashboard-overview .overview-stat:first-child {
+  padding-left: 0;
+  border-left: 0;
+}
+
+.dashboard-overview .overview-stat strong,
+.dashboard-overview .overview-stat span {
+  display: block;
+  margin: 0;
+}
+
+.dashboard-overview .overview-stat span {
+  line-height: var(--line-height-body);
+}
+
+.dashboard-panel .link-card--copilot {
+  max-width: none;
+  border-left: 0;
+}
+
+.dashboard-panel .activity-summary,
+.dashboard-panel .link-card {
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.dashboard-panel--empty {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.dashboard-copilot__suggestion {
+  display: inline-flex;
+  width: fit-content;
+  max-width: 100%;
+  margin-bottom: var(--space-4);
+  color: var(--color-text);
+  font-weight: 400;
+  text-decoration: none;
+}
+
+.dashboard-copilot__suggestion:hover:not(:disabled),
+.dashboard-copilot__suggestion:focus-visible {
+  color: var(--color-text);
+  border-color: var(--color-primary);
+  background: var(--color-primary-soft);
+}
+
+.copilot-form__input,
+.copilot-form__input:focus,
+.copilot-form__input:focus-visible {
+  border: none;
+  border-radius: 0;
+  outline: none;
+  box-shadow: none;
+  background: transparent;
+}
+
+.copilot-form__composer:focus-within {
+  border-color: var(--color-focus);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-focus) 22%, transparent);
+}
+
+@media (max-width: 640px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-4);
+  }
+
+  .dashboard-panel {
+    padding: var(--space-4);
+  }
+}
+
+/* Simple Mode keeps overview stats aligned until the card is truly narrow. */
+body.a11y-simple-mode .dashboard-overview .overview-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0;
+}
+
+body.a11y-simple-mode .dashboard-overview .overview-stat {
+  min-width: 0;
+  padding: var(--space-4);
+  border: 0;
+  border-left: 1px solid var(--color-line);
+}
+
+body.a11y-simple-mode .dashboard-overview .overview-stat:first-child {
+  padding-left: 0;
+  border-left: 0;
+}
+
+@media (max-width: 640px) {
+  body.a11y-simple-mode .dashboard-overview .overview-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-4);
+  }
+
+  body.a11y-simple-mode .dashboard-overview .overview-stat,
+  body.a11y-simple-mode .dashboard-overview .overview-stat:first-child {
+    padding: var(--space-3) 0;
+    border: 0;
+  }
+}
+
+/* Final frontend polish: keep the Copilot conversation as one calm surface. */
+.copilot-surface {
+  padding: var(--space-6);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-raised);
+}
+
+.copilot-surface .page-intro {
+  margin-bottom: var(--space-4);
+}
+
+.copilot-surface .copilot-empty {
+  margin: var(--space-3) 0 var(--space-4);
+  padding: 0;
+}
+
+.copilot-surface .copilot-form {
+  margin-top: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-line);
+}
+
+.copilot-surface .copilot-form__boundary {
+  margin-bottom: 0;
+}
+
+@media (max-width: 600px) {
+  .dashboard-section-card,
+  .copilot-surface {
+    padding: var(--space-4);
+  }
+}
+
+/* Stage 11B: one restrained motion language across the application. */
+@keyframes careloop-page-enter {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes careloop-soft-enter {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes careloop-message-enter {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes careloop-source-enter {
+  from { opacity: 0; transform: scale(0.98); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.app-main--enter {
+  animation: careloop-page-enter var(--motion-slow) var(--motion-ease) both;
+}
+
+.dashboard-grid > .dashboard-panel {
+  animation: careloop-soft-enter var(--motion-normal) var(--motion-ease) both;
+  transition: border-color var(--motion-fast) var(--motion-ease), box-shadow var(--motion-fast) var(--motion-ease);
+}
+
+.dashboard-grid > .dashboard-panel:nth-child(2) { animation-delay: 55ms; }
+.dashboard-grid > .dashboard-panel:nth-child(3) { animation-delay: 110ms; }
+.dashboard-grid > .dashboard-panel:nth-child(4) { animation-delay: 165ms; }
+
+.dashboard-grid > .dashboard-panel:hover {
+  border-color: color-mix(in srgb, var(--color-action) 45%, var(--color-line));
+  box-shadow: 0 2px 8px rgba(43, 43, 38, 0.08);
+}
+
+.dashboard-recent-list > .episode-summary-card {
+  animation: careloop-soft-enter var(--motion-normal) var(--motion-ease) both;
+}
+
+.dashboard-recent-list > .episode-summary-card:nth-child(2) { animation-delay: 55ms; }
+.dashboard-recent-list > .episode-summary-card:nth-child(3) { animation-delay: 110ms; }
+.dashboard-recent-list > .episode-summary-card:nth-child(n + 4) { animation-delay: 150ms; }
+
+.btn:not(:disabled):hover,
+.a11y-btn:not(:disabled):hover,
+.preference-option:not(:disabled):hover {
+  transform: translateY(-1px);
+}
+
+.btn:not(:disabled):active,
+.a11y-btn:not(:disabled):active,
+.preference-option:not(:disabled):active {
+  transform: translateY(0);
+}
+
+.primary-nav__link,
+.mobile-nav__link,
+.appearance-toggle,
+.appearance-panel__close,
+.preference-option {
+  transition: background-color var(--motion-fast) var(--motion-ease),
+              border-color var(--motion-fast) var(--motion-ease),
+              color var(--motion-fast) var(--motion-ease),
+              transform var(--motion-fast) var(--motion-ease);
+}
+
+.appearance-panel {
+  transform-origin: top right;
+  animation: careloop-source-enter var(--motion-fast) var(--motion-ease) both;
+}
+
+.copilot-surface .page-intro,
+.copilot-surface .copilot-suggestions h2,
+.copilot-surface .copilot-form {
+  animation: careloop-soft-enter var(--motion-normal) var(--motion-ease) both;
+}
+
+.copilot-surface .copilot-suggestions h2 { animation-delay: 45ms; }
+.copilot-surface .copilot-form { animation-delay: 140ms; }
+
+.copilot-surface .copilot-suggestion {
+  animation: careloop-soft-enter var(--motion-normal) var(--motion-ease) both;
+}
+
+.copilot-surface .copilot-suggestion:nth-child(2) { animation-delay: 55ms; }
+.copilot-surface .copilot-suggestion:nth-child(3) { animation-delay: 110ms; }
+.copilot-surface .copilot-suggestion:nth-child(4) { animation-delay: 165ms; }
+
+.copilot-conversation {
+  animation: careloop-soft-enter var(--motion-normal) var(--motion-ease) both;
+}
+
+.copilot-message {
+  animation: careloop-message-enter var(--motion-normal) var(--motion-ease) both;
+}
+
+.copilot-citation__details,
+.source-popover__content {
+  animation: careloop-source-enter var(--motion-fast) var(--motion-ease) both;
+}
+
+.copilot-citation__toggle,
+.copilot-message__followup,
+.scale-btn,
+.source-tag,
+.prepared-question-card__capture {
+  transition: background-color var(--motion-fast) var(--motion-ease),
+              border-color var(--motion-fast) var(--motion-ease),
+              color var(--motion-fast) var(--motion-ease),
+              transform var(--motion-fast) var(--motion-ease);
+}
+
+.card-animate,
+.card-animate-delay-0,
+.card-animate-delay-1,
+.card-animate-delay-2,
+.card-animate-delay-3,
+.card-animate-delay-4,
+.card-animate-delay-5,
+.card-animate-delay-6,
+.card-animate-delay-7 {
+  animation-duration: var(--motion-slow);
+}
+
+.card-animate-delay-0 { animation-delay: 0ms; }
+.card-animate-delay-1 { animation-delay: 50ms; }
+.card-animate-delay-2 { animation-delay: 100ms; }
+.card-animate-delay-3 { animation-delay: 150ms; }
+.card-animate-delay-4 { animation-delay: 200ms; }
+.card-animate-delay-5 { animation-delay: 250ms; }
+.card-animate-delay-6,
+.card-animate-delay-7 { animation-delay: 300ms; }
+
+@media (prefers-reduced-motion: reduce) {
+  .app-main--enter,
+  .dashboard-grid > .dashboard-panel,
+  .dashboard-recent-list > .episode-summary-card,
+  .copilot-surface .page-intro,
+  .copilot-surface .copilot-suggestions h2,
+  .copilot-surface .copilot-form,
+  .copilot-surface .copilot-suggestion,
+  .copilot-conversation,
+  .copilot-message,
+  .copilot-citation__details,
+  .source-popover__content {
+    animation: none !important;
+    transform: none !important;
+  }
+
+  .btn,
+  .a11y-btn,
+  .preference-option,
+  .primary-nav__link,
+  .mobile-nav__link,
+  .appearance-toggle,
+  .appearance-panel__close,
+  .copilot-citation__toggle,
+  .copilot-message__followup,
+  .scale-btn,
+  .source-tag,
+  .prepared-question-card__capture {
+    transition-duration: 0.01ms !important;
+    transform: none !important;
   }
 }
