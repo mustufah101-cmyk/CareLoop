@@ -90,10 +90,13 @@ export const api = {
 
   // ── During-flow ───────────────────────────────────────────────────────────
 
-  captureDuringNote: (episodeId, notes) =>
+  captureDuringNote: (episodeId, notes, questionId, questionText) =>
     request(`/episodes/${episodeId}/during`, {
       method: 'POST',
-      body: JSON.stringify({ notes }),
+      body: JSON.stringify({
+        notes,
+        ...(questionId && questionText ? { question_id: questionId, question_text: questionText } : {}),
+      }),
     }),
 
   getDuringNotes: (episodeId) => request(`/episodes/${episodeId}/during`),

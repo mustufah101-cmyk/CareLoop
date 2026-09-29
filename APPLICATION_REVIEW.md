@@ -336,6 +336,32 @@ Stage 10E adds a Dashboard Today section using only an explicitly dated appointm
 
 Validation: frontend production build and lint passed with five pre-existing warnings; all 55 backend tests passed; and `git diff --check` passed. Browser and screen-reader interactions were not claimed as manually tested.
 
+## Stage 10F Questions → During Visit → Post-visit continuity — 2026-09-30
+
+Stage 10F connects prepared Before questions to the During phase and keeps the distinction between clinician-authored information and patient-entered notes explicit.
+
+Implemented:
+
+- Prepared questions now use stable text-derived IDs, so a patient can attach a visit note to the specific question they prepared.
+- The Before phase presents questions under “Questions to ask” without implying that every question must be asked.
+- The During phase resurfaces those questions under “Questions you prepared,” with keyboard-accessible “Add what you heard” controls.
+- Question-specific notes use the existing During capture/generation path and are stored as `DuringNote` records with an optional question reference. General During notes remain unchanged.
+- Persisted answers are labeled “You recorded” and “patient-entered visit note”; they are not presented as clinician-confirmed instructions.
+- The timeline shows “Questions discussed” when a question has a recorded note and a neutral “Still unanswered” state when no answer has been recorded. Absence is never relabeled as “Not discussed.”
+- Prepared-question source disclosures remain available through “Why am I seeing this?”, while patient-entered notes use the separate patient-note provenance treatment.
+- The existing Before → During → After → Check-ins journey, source traceability, appearance modes, Simple Mode, focus states, and reduced-motion behavior are preserved.
+
+The narrow backend extension adds optional question-reference fields to the existing During note model/request and validates that a referenced question belongs to the current episode. No medical logic, extraction, generation rules, check-in behavior, or persistence model outside this continuity reference changed.
+
+Validation:
+
+- Frontend production build passes.
+- Frontend lint completes with the repository’s five existing non-blocking warnings; no new warnings were introduced by Stage 10F.
+- `git diff --check` passes.
+- Backend pytest could not run in this environment because the available `venv` does not include `pytest` and no system `python` command is available. Backend compilation should be run with the project’s configured Python environment.
+- Added model-level tests for stable question IDs, patient-note question references, and request validation; they require the repository’s test dependencies.
+- Browser and screen-reader interactions were not claimed as manually tested.
+
 ## Executive Summary
 
 Your CareLoop application is **well-architected and ready for demo**. The codebase follows the specifications in GEMINI.md and DESIGN.md consistently. I've reviewed all components and found the implementation to be solid.

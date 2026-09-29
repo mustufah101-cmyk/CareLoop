@@ -7,10 +7,11 @@ Used for API request/response validation and database serialization.
 
 from datetime import datetime
 from enum import Enum
+import hashlib
 from typing import Any, Optional
 from uuid import uuid4
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 
 # ── Sub-models ────────────────────────────────────────────────────────────────
@@ -40,9 +41,19 @@ class Reminder(BaseModel):
 
 
 class SuggestedQuestion(BaseModel):
+    question_id: Optional[str] = None
     question: str
     reason: str = ""
     source_field: str = "appointment_letter"
+
+    @model_validator(mode="after")
+    def ensure_stable_question_id(self):
+        """Give question text a stable reference for question-specific visit notes."""
+        if not self.question_id:
+            normalized = " ".join(self.question.lower().split())
+            digest = hashlib.sha256(normalized.encode("utf-8")).hexdigest()[:16]
+            self.question_id = f"question-{digest}"
+        return self
 
 
 class BeforeFlowOutput(BaseModel):
@@ -107,6 +118,8 @@ class DuringNote(BaseModel):
     raw_text: Optional[str] = None
     structured_summary: Optional[dict[str, Any]] = None
     captured_at: datetime = Field(default_factory=datetime.utcnow)
+    question_id: Optional[str] = None
+    question_text: Optional[str] = None
 
 
 class CheckinResponse(BaseModel):
@@ -156,6 +169,14 @@ class CheckinResponseRequest(BaseModel):
 
 class DuringNoteRequest(BaseModel):
     notes: str  # Patient's free-text notes from the visit
+    question_id: Optional[str] = None
+    question_text: Optional[str] = None
+
+    @model_validator(mode="after")
+    def validate_question_reference(self):
+        if bool(self.question_id) != bool(self.question_text):
+            raise ValueError("question_id and question_text must be provided together")
+        return self
 
 
 class SimulateDayRequest(BaseModel):

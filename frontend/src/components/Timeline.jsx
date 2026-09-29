@@ -5,6 +5,7 @@ import { CheckinCard } from './CheckinCard'
 import { DocumentUpload } from './DocumentUpload'
 import { SourceTag } from './SourceTag'
 import { DuringCapture } from './DuringCapture'
+import { PreparedQuestionCard } from './PreparedQuestionCard'
 import { api } from '../api'
 
 /**
@@ -164,7 +165,7 @@ export function Timeline({ episode, onEpisodeUpdate }) {
               {episode.before.suggested_questions?.length > 0 && (
                 <div style={{ marginBottom: 'var(--space-6)' }}>
                   <h2 style={{ marginBottom: 'var(--space-4)', fontFamily: 'var(--font-headline)' }}>
-                    Questions to ask your clinician
+                    Questions to ask
                   </h2>
                   {episode.before.suggested_questions.map((q, i) => (
                     <div
@@ -216,6 +217,22 @@ export function Timeline({ episode, onEpisodeUpdate }) {
 
           {!hasDuring ? (
             <div className="phase-empty">
+              {episode.before?.suggested_questions?.length > 0 && (
+                <div className="prepared-questions-during">
+                  <h3 className="prepared-questions-during__heading">Questions you prepared</h3>
+                  <p className="prepared-questions-during__intro">Keep these questions with you during the appointment. Add what you heard when you are ready.</p>
+                  {episode.before.suggested_questions.map((question, i) => (
+                    <PreparedQuestionCard
+                      key={question.question_id || i}
+                      question={question}
+                      episodeId={episode.episode_id}
+                      extractedJson={episode.documents.find(d => d.doc_type === 'appointment_letter')?.extracted_json}
+                      documentName={episode.documents.find(d => d.doc_type === 'appointment_letter')?.file_name}
+                      onCaptureComplete={handleDuringCapture}
+                    />
+                  ))}
+                </div>
+              )}
               <p className="phase-empty__message">Add notes from your appointment here to keep instructions in one place.</p>
               <DuringCapture
                 episodeId={episode.episode_id}
@@ -224,7 +241,38 @@ export function Timeline({ episode, onEpisodeUpdate }) {
             </div>
           ) : (
             <div>
-              {episode.during.map((note, i) => (
+              {episode.before?.suggested_questions?.length > 0 && (
+                <div className="prepared-questions-during">
+                  <h3 className="prepared-questions-during__heading">Questions you prepared</h3>
+                  <p className="prepared-questions-during__intro">Your notes stay clearly marked as information you recorded during the visit.</p>
+                  {episode.before.suggested_questions.map((question, i) => (
+                    <PreparedQuestionCard
+                      key={question.question_id || i}
+                      question={question}
+                      answerNotes={episode.during.filter(note => note.question_id === question.question_id)}
+                      episodeId={episode.episode_id}
+                      extractedJson={episode.documents.find(d => d.doc_type === 'appointment_letter')?.extracted_json}
+                      documentName={episode.documents.find(d => d.doc_type === 'appointment_letter')?.file_name}
+                      onCaptureComplete={handleDuringCapture}
+                    />
+                  ))}
+                </div>
+              )}
+              {episode.during.some(note => note.question_id) && (
+                <div className="question-recap" aria-label="Questions discussed">
+                  <h3>Questions discussed</h3>
+                  <p>These are the questions with a note recorded during this visit.</p>
+                </div>
+              )}
+              {episode.before?.suggested_questions?.some(question =>
+                !episode.during.some(note => note.question_id === question.question_id)
+              ) && (
+                <div className="question-recap question-recap--muted" aria-label="Still unanswered questions">
+                  <h3>Still unanswered</h3>
+                  <p>No answer recorded yet for one or more prepared questions.</p>
+                </div>
+              )}
+              {episode.during.filter(note => !note.question_id).map((note, i) => (
                 <div
                   key={note.note_id}
                   className={`card card-animate card-animate-delay-${Math.min(i, 7)}`}
