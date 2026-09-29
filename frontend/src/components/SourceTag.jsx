@@ -42,7 +42,7 @@ function readableValue(value) {
   return String(value)
 }
 
-export function SourceTag({ sourceField, extractedJson, documentLabel = 'your care document', documentName, displayText, isVerbatim = false }) {
+export function SourceTag({ sourceField, extractedJson, documentLabel = 'your care document', documentName, displayText, isVerbatim = false, whyLabel = 'Why am I seeing this?' }) {
   const [open, setOpen] = useState(false)
   const contentId = useId()
   const triggerRef = useRef(null)
@@ -95,9 +95,9 @@ export function SourceTag({ sourceField, extractedJson, documentLabel = 'your ca
         aria-expanded={open}
         aria-controls={contentId}
         ref={triggerRef}
-        aria-label={sourceText + '. See why this appears in your care plan.'}
+        aria-label={whyLabel + '. See why this appears in your care plan.'}
       >
-        <span>{sourceField ? 'Why am I seeing this?' : sourceText}</span>
+        <span>{sourceField ? whyLabel : sourceText}</span>
         <span className="source-tag__icon" aria-hidden="true">›</span>
       </button>
       {open && (

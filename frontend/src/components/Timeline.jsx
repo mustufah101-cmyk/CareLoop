@@ -53,6 +53,7 @@ export function Timeline({ episode, onEpisodeUpdate }) {
   const hasAfter = !!episode.after
   const hasDuring = episode.during?.length > 0
   const hasCheckins = episode.checkins?.length > 0
+  const dischargeDocument = episode.documents.find(d => d.doc_type === 'discharge_summary')
   const checkinsComplete = hasCheckins && episode.checkins.every(checkin => checkin.response || checkin.simulated)
   const phaseReady = [hasBefore, hasDuring, hasAfter, checkinsComplete]
   const currentPhaseIndex = phaseReady.findIndex(ready => !ready)
@@ -509,7 +510,8 @@ export function Timeline({ episode, onEpisodeUpdate }) {
                     checkin={checkin}
                     episodeId={episode.episode_id}
                     documentLabel="your discharge summary"
-                    sourceDocument={episode.documents.find(d => d.doc_type === 'discharge_summary')}
+                    sourceDocument={dischargeDocument}
+                    extractedJson={dischargeDocument?.extracted_json}
                     onRespond={handleCheckinRespond}
                     animDelay={i}
                   />
@@ -522,7 +524,8 @@ export function Timeline({ episode, onEpisodeUpdate }) {
                   checkin={simulatedCheckin.checkin}
                   episodeId={episode.episode_id}
                   documentLabel="your discharge summary"
-                  sourceDocument={episode.documents.find(d => d.doc_type === 'discharge_summary')}
+                  sourceDocument={dischargeDocument}
+                  extractedJson={dischargeDocument?.extracted_json}
                   onRespond={handleCheckinRespond}
                   animDelay={0}
                 />
@@ -548,7 +551,15 @@ export function Timeline({ episode, onEpisodeUpdate }) {
                       }}
                     >
                       <span style={{ fontSize: '0.85rem' }}>○</span>
-                      <span>Day {c.scheduled_for_day} — {c.prompt_text}</span>
+                      <span><strong>Day {c.scheduled_for_day}</strong> — {c.prompt_text}</span>
+                      <SourceTag
+                        sourceField={c.source_field}
+                        extractedJson={dischargeDocument?.extracted_json}
+                        documentLabel="your discharge summary"
+                        documentName={dischargeDocument?.file_name}
+                        displayText={c.prompt_text}
+                        whyLabel="Why am I being asked this?"
+                      />
                     </div>
                   ))}
                 </div>

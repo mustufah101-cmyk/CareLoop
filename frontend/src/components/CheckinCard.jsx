@@ -9,7 +9,47 @@ import { api } from '../api'
  * Flagging ONLY shows when the backend confirms a match against the
  * patient's own warning_signs — never client-side inference.
  */
-export function CheckinCard({ checkin, episodeId, onRespond, documentLabel, sourceDocument, animDelay = 0 }) {
+function readSourceValue(extractedJson, sourceField) {
+  if (!extractedJson || !sourceField) return null
+  try {
+    const parts = sourceField.replace(/\[(\d+)\]/g, '.$1').split('.')
+    let value = extractedJson
+    for (const part of parts) {
+      if (value == null) return null
+      value = value[part]
+    }
+    return value == null || value === '' ? null : value
+  } catch {
+    return null
+  }
+}
+
+function readableSourceValue(value) {
+  if (typeof value === 'string') return value
+  if (Array.isArray(value)) return value.map(readableSourceValue).join(', ')
+  if (value && typeof value === 'object') {
+    return value.restriction || value.warning_sign || value.timeframe || value.instruction || null
+  }
+  return null
+}
+
+function contextualPrompt(checkin, extractedJson) {
+  const value = readableSourceValue(readSourceValue(extractedJson, checkin.source_field))
+  if (!value) return checkin.prompt_text
+  const sourceField = checkin.source_field || ''
+  if (sourceField.startsWith('warning_signs')) {
+    return `Your care instructions asked you to watch for ${value}. How is it today?`
+  }
+  if (sourceField.startsWith('activity_restrictions')) {
+    return `Your care instructions included: ${value}. How is this going?`
+  }
+  if (sourceField.startsWith('follow_up')) {
+    return `Your recorded follow-up instructions include: ${value}. How is this going?`
+  }
+  return checkin.prompt_text
+}
+
+export function CheckinCard({ checkin, episodeId, onRespond, documentLabel, sourceDocument, extractedJson, animDelay = 0 }) {
   const [selected, setSelected] = useState(
     checkin.response ? checkin.response.response_value : null
   )
@@ -105,11 +145,16 @@ export function CheckinCard({ checkin, episodeId, onRespond, documentLabel, sour
         </div>
       )}
 
+      <div className="checkin-card__meta">
+        <span>Day {checkin.scheduled_for_day}</span>
+        {submitted && <span>{isFlagged ? 'Flagged response' : 'Recorded response'}</span>}
+      </div>
+
       <span className={`card-kind ${isFlagged ? 'card-kind--warning' : 'card-kind--checkin'}`}>
         <span aria-hidden="true">{isFlagged ? '!' : '?'}</span>
         {isFlagged ? 'Warning' : 'Check-in'}
       </span>
-      <p className="checkin-card__question">{checkin.prompt_text}</p>
+      <p className="checkin-card__question">{contextualPrompt(checkin, extractedJson)}</p>
 
       {checkin.response_type === 'scale_1_5' && (
         <>
@@ -210,7 +255,7 @@ export function CheckinCard({ checkin, episodeId, onRespond, documentLabel, sour
         <div className="flag-alert" role="alert">
           <span className="flag-alert__icon" aria-hidden="true">⚠</span>
           <div className="flag-alert__text">
-            This matches a warning sign from your discharge instructions:
+            This matches something your care instructions asked you to watch for:
             <em className="flag-alert__quote">"{matchedSign}"</em>
             <span className="flag-alert__cta">
               Consider contacting your care provider.
@@ -219,7 +264,18 @@ export function CheckinCard({ checkin, episodeId, onRespond, documentLabel, sour
         </div>
       )}
 
-      <SourceTag sourceField={checkin.source_field} extractedJson={null} documentLabel={documentLabel} documentName={sourceDocument?.file_name} displayText={checkin.prompt_text} />
+      {submitted && !isFlagged && (
+        <p className="checkin-card__saved" role="status" aria-live="polite">Check-in saved.</p>
+      )}
+
+      <SourceTag
+        sourceField={checkin.source_field}
+        extractedJson={extractedJson}
+        documentLabel={documentLabel}
+        documentName={sourceDocument?.file_name}
+        displayText={contextualPrompt(checkin, extractedJson)}
+        whyLabel="Why am I being asked this?"
+      />
     </div>
   )
 }

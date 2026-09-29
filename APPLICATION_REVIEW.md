@@ -362,6 +362,30 @@ Validation:
 - Added model-level tests for stable question IDs, patient-note question references, and request validation; they require the repository’s test dependencies.
 - Browser and screen-reader interactions were not claimed as manually tested.
 
+## Stage 10G grounded contextual check-ins — 2026-09-30
+
+Stage 10G connects follow-up check-ins to existing clinician-provided discharge data without changing scheduling, response persistence, or warning-sign flagging logic.
+
+Implemented:
+
+- Check-in prompts use grounded contextual wording only when `source_field` resolves to an actual extracted discharge value, including warning signs, activity restrictions, or follow-up information.
+- Check-in source disclosures now receive the real discharge extraction and use the patient-facing “Why am I being asked this?” action.
+- Trace details preserve the source document, friendly source field, recorded information, and how it appears in the check-in.
+- Flagged responses use neutral source-grounded wording: “This matches something your care instructions asked you to watch for,” followed by the existing provider-contact guidance.
+- Non-flagged submitted responses show “Check-in saved.” and do not make medical reassurance claims.
+- Recorded and upcoming check-ins are easier to scan with Day N and recorded/upcoming status labels. Relative `scheduled_for_day` values remain relative and are not converted into calendar dates.
+- Missing source context falls back to the existing stored prompt and does not invent medical wording.
+- Existing response controls, keyboard focus, provenance disclosure, Simple Mode, appearance modes, reduced motion, and mobile behavior remain intact.
+
+Validation:
+
+- Frontend production build passes.
+- Frontend lint completes with the same five existing non-blocking warnings; no new warnings were introduced by Stage 10G.
+- Backend compilation passes.
+- Direct flagging checks pass for warning-derived, non-flagged, and missing-source cases.
+- Full pytest could not run because pytest is not installed in the available project environment; no test count is claimed. Added backend regression tests are ready for the configured test environment.
+- Browser and screen-reader interactions were not claimed as manually tested.
+
 ## Executive Summary
 
 Your CareLoop application is **well-architected and ready for demo**. The codebase follows the specifications in GEMINI.md and DESIGN.md consistently. I've reviewed all components and found the implementation to be solid.
