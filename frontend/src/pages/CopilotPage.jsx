@@ -1,0 +1,5 @@
+import { routeHref } from '../routing'
+
+export function CopilotPage() {
+  return <div className="page-shell copilot-page"><div className="page-intro"><p className="page-intro__eyebrow">A future CareLoop feature</p><h1>CareLoop Copilot</h1><p>Copilot will help you find answers in your recorded care history and clinician-provided care documents.</p></div><section className="copilot-placeholder card" aria-labelledby="copilot-preview-heading"><span className="card-kind card-kind--info"><span aria-hidden="true">i</span>Information</span><h2 id="copilot-preview-heading">Grounded help is coming later</h2><p>This page is ready for the future assistant. It does not answer questions or provide medical advice yet.</p><div className="copilot-example-list" aria-label="Examples of future questions"><p>Examples of questions it may help you find in your records:</p><ul><li>“What did my care instructions say about driving?”</li><li>“Show me what happened during my last recorded visit.”</li><li>“What follow-up information is recorded in CareLoop?”</li></ul></div><a className="btn btn--secondary" href={routeHref('/care-journey')}>View your recorded care</a></section></div>
+}

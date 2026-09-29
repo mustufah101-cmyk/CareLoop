@@ -99,6 +99,74 @@ Validation:
 - git diff --check passes.
 - No backend files were modified.
 - Browser interactions were not claimed as tested; validation was code-level plus production build/lint/diff checks.
+
+## Stage 6 application shell, navigation, and episode pages — 2026-09-29
+
+Stage 6 adds frontend-only application structure while preserving the existing detailed episode Timeline, Stage 1–5 accessibility and appearance behavior, source traceability, and all API/data behavior.
+
+Implemented:
+
+- Added lightweight hash routing for Dashboard, Care Journey, episode detail, Copilot, and unknown-route states.
+- Root navigation now leads to Dashboard; browser hash history supports back and forward navigation.
+- Added persistent desktop navigation and labeled mobile bottom navigation with `aria-current="page"` for the active area.
+- Preserved the global Accessibility & appearance panel and localStorage-backed Light, Dark, System, Large Text, and High Contrast preferences across route changes.
+- Adapted EpisodePage to retrieve an existing episode using `api.getEpisode` from the route ID, while keeping the existing Timeline intact.
+- Added a patient-facing “Back to Care Journey” affordance without exposing the technical episode ID.
+- Added Care Journey using the existing `listEpisodes` API, showing only real returned episode metadata and links to detailed journeys.
+- Added Dashboard using real episode counts, document/phase presence, completed check-ins, and backend-confirmed flagged check-ins only. No global action completion claims or fabricated patient information are shown.
+- Added a non-functional Copilot page shell with clearly labeled future question examples and no AI/API behavior.
+- Extended the existing warm design system with responsive page shells, episode cards, navigation, mobile safe-area spacing, focus-compatible links, and accessible empty/loading/error states.
+
+Validation:
+
+- npm.cmd run build passes.
+- npm.cmd run lint completes with five non-blocking warnings in EpisodePage.jsx, ActionItem.jsx, and Timeline.jsx; no lint errors occur.
+- git diff --check passes.
+- No backend files or API contracts were modified.
+- Browser interaction validation was not claimed because the in-app browser was unavailable; route parsing, navigation markup, data usage, and accessibility behavior were reviewed in code and validated through the production build.
+
+## Stage 7 Dashboard and Care Journey UX polish — 2026-09-29
+
+Stage 7 refines the frontend presentation of the Dashboard and Care Journey without changing APIs, backend behavior, medical logic, persistence, source traceability, appearance settings, or the detailed episode Timeline.
+
+Implemented:
+
+- Dashboard now has explicit Care overview, Recent care journeys, Follow-up activity, and CareLoop Copilot sections.
+- Recent journeys are ordered by `created_at` only when a valid date is available; the UI does not reinterpret it as an appointment date or update date.
+- Follow-up activity counts only completed/responded or simulated check-ins, and separately surfaces backend-provided flagged check-ins.
+- Dashboard avoids fabricated appointments, medications, allergies, vitals, treatment status, and non-persisted task completion counts.
+- Added a shared EpisodeSummaryCard for consistent scanning across Dashboard and Care Journey.
+- Care Journey now presents real episodes in a calm longitudinal history grouped by the year they were added, with a separate honest fallback when a date is unavailable.
+- Episode cards show only grounded title/type, added date, phase-data presence, document count, completed/unanswered check-in counts, flagged check-ins, and a clear “View journey” action.
+- Added responsive card stacking, timeline rails, heading/action wrapping, and mobile-safe spacing while preserving Light, Dark, System, Large Text, High Contrast, and focus behavior.
+
+Validation:
+
+- npm.cmd run build passes.
+- npm.cmd run lint completes with five non-blocking warnings in EpisodePage.jsx, ActionItem.jsx, and Timeline.jsx; no lint errors occur.
+- git diff --check passes.
+- No backend files or API contracts were modified.
+- Browser interaction validation was not claimed because the in-app browser was unavailable; responsive and accessibility behavior was reviewed through code and production build checks.
+## Stage 8 journey creation and episode-card refinement — 2026-09-29
+
+Stage 8 keeps the existing frontend data flow and API contract intact while making new care journey creation explicit and patient-friendly. The existing `createEpisode(patient_id, appointment_type)` contract already supported the requested label, so no backend or API changes were required.
+
+Implemented:
+
+- Added a shared accessible creation dialog asking “What is this care for?” with a visible label, short-name validation, an 80-character limit, character count, Cancel and Start journey actions, focus placement on open, Escape handling, and disabled/loading states.
+- Care Journey and episode detail now pass the patient-entered label to the existing `createEpisode` API and navigate to the newly created episode detail page on success.
+- Removed one-click generic creation from the Care Journey flow and removed automatic generic episode creation when the episode detail route has no selected episode.
+- Preserved `appointment_type` as the primary episode title, with the existing calm fallback when it is unavailable; technical episode IDs remain hidden from patient-facing titles.
+- Added a compact Dashboard card treatment that prioritizes journey title, grounded added date, phase/activity details, check-in information, and the View journey action. Care Journey cards remain more spacious.
+- Preserved source traceability, the Before → During → After → Check-ins journey, appearance preferences, Large Text, High Contrast, keyboard focus behavior, and responsive layout foundations.
+
+Validation:
+
+- Production build passes. Lint completes with five existing non-blocking warnings in ActionItem.jsx, Timeline.jsx, and the pre-existing EpisodePage.jsx effect; there are no lint errors and the new creation dialog adds no warning.
+- git diff --check was run.
+- No backend files or API contracts were modified.
+- Browser interaction validation was not claimed because the in-app browser was unavailable; the creation flow and responsive states were reviewed in code and through the production build checks.
+
 **Status:** ✅ Application is in excellent condition
 
 ---
