@@ -167,6 +167,74 @@ Validation:
 - No backend files or API contracts were modified.
 - Browser interaction validation was not claimed because the in-app browser was unavailable; the creation flow and responsive states were reviewed in code and through the production build checks.
 
+## Stage 9A Copilot grounding contract and deterministic retrieval — 2026-09-29
+
+Stage 9A adds only the backend grounding foundation for the approved CareLoop Copilot architecture. It does not add a Copilot API endpoint, call an LLM for Copilot answers, persist conversations, or modify the frontend.
+
+Implemented:
+
+- Added strict Pydantic models for Copilot requests, closed intent categories, provenance-aware evidence, and grounding results.
+- Added deterministic intent classification with an explicit `unknown` fallback and an `unsupported_medical_judgment` category.
+- Added deterministic retrieval over patient-owned episode data with optional episode scope filtering.
+- Whitelisted document instruction, follow-up, warning-sign, visit-note, care-history, and check-in fields by intent.
+- Preserved clinician-document, patient-note, episode-metadata, and check-in provenance. Structured extracted values are marked `is_verbatim=false`; raw patient notes are marked verbatim only when they are the stored note text.
+- Prevented patient notes from being returned as clinician-document evidence and preserved conflicting clinician-document values rather than resolving them silently.
+- Stored document/note content is treated only as data; prompt-injection strings do not affect classifier or retrieval control flow.
+- No general medical knowledge or generated answer is produced. Unsupported medical-judgment requests return grounding metadata only, with no answer text.
+
+Validation:
+
+- Added 14 deterministic backend tests covering retrieval, provenance, missing/no-record behavior, conflicts, prompt-injection content, episode scope, patient isolation, and unsupported medical questions.
+- Backend test suite passes with `python -m unittest discover -s tests -v`.
+- No LLM call, frontend change, Copilot endpoint, conversation persistence, vector search, or existing extraction/generation behavior was added or changed.
+- `git diff --check` was run.
+
+## Stage 9B deterministic Copilot grounding API — 2026-09-29
+
+Stage 9B exposes the Stage 9A grounding layer through `POST /api/copilot/ground`. The endpoint returns only the closed intent, supported state, provenance-aware evidence, related episode IDs, and medical-judgment detection. It does not generate conversational answers.
+
+Implemented:
+
+- Added and registered a dedicated `backend/routers/copilot.py` router.
+- Added request validation for missing or blank patient IDs, empty or whitespace-only questions, questions over 2,000 characters, and malformed or oversized episode ID lists.
+- Enforced patient scoping and optional episode scoping through the existing deterministic grounding layer. Episodes belonging to another patient are filtered without revealing their existence.
+- Added safe server-error handling with a patient-safe message and metadata-only logging: request ID, intent, evidence count, and supported state. Questions, document text, and patient notes are not logged.
+- Preserved unsupported medical-judgment behavior: the endpoint returns grounding metadata only and never produces a diagnosis or treatment answer.
+- Preserved clinician-document and patient-note provenance and conflicting evidence.
+
+Validation:
+
+- The combined backend suite passes: 33 tests, including Stage 9A grounding tests and Stage 9B API tests.
+- Backend compilation passes.
+- `git diff --check` passes.
+- No frontend files were modified.
+- No LLM answer generation, conversation persistence, vector search, or existing extraction/generation behavior was added or changed.
+
+## Stage 9C grounded Copilot answer generation — 2026-09-29
+
+Stage 9C adds structured, evidence-only Copilot answers through `POST /api/copilot/ask`. The existing `/api/copilot/ground` endpoint remains available for deterministic grounding and debugging. No frontend changes or conversation persistence were added.
+
+Implemented:
+
+- Added strict answer models for segments, citation IDs, answer types, and safety metadata.
+- Added deterministic answer construction for instruction, follow-up, warning-sign, visit-note, care-history, and check-in lookups.
+- Deterministic answers are preferred and do not call an LLM.
+- Added a dedicated Copilot synthesis generator for explicitly multi-record summary questions. Its input is limited to the patient question and retrieved evidence/provenance; it receives no full database, prior assistant answers, or external medical context.
+- Added post-generation validation for citation existence, segment citations, support/evidence consistency, provenance, and obvious unsupported medical claims.
+- Invalid or malformed LLM output falls back to a safe source-grounded response and is not exposed to the client.
+- Unsupported medical-judgment questions return no diagnosis or treatment recommendation. Related recorded warning signs may be surfaced separately when deterministic grounding finds them.
+- Not-found questions return “I could not find that information in your recorded care.” without general medical fallback.
+- Stored prompt-injection text remains data and cannot alter Copilot control flow.
+- Logging contains request metadata, intent, evidence count, answer type, LLM-used state, and validation state only; full questions, notes, documents, and answers are not logged.
+
+Validation:
+
+- Combined Copilot backend suite passes: 54 tests.
+- Tests cover deterministic answers, unsupported and not-found behavior, citations, provenance, conflicts, prompt injection, cross-patient isolation, malformed LLM output, unsafe claims, and no-LLM simple queries.
+- Backend compilation passes.
+- `git diff --check` passes.
+- No frontend files were modified and no conversation persistence was added.
+
 **Status:** ✅ Application is in excellent condition
 
 ---

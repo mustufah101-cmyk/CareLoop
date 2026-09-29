@@ -6,10 +6,11 @@ Used for API request/response validation and database serialization.
 """
 
 from datetime import datetime
+from enum import Enum
 from typing import Any, Optional
 from uuid import uuid4
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 # ── Sub-models ────────────────────────────────────────────────────────────────
@@ -160,3 +161,119 @@ class DuringNoteRequest(BaseModel):
 class SimulateDayRequest(BaseModel):
     day: int
     demo_mode: bool = True  # Explicit demo mode flag — never hide this
+
+
+# —— Copilot grounding models ——
+
+
+class CopilotIntent(str, Enum):
+    DOCUMENT_INSTRUCTION_LOOKUP = "document_instruction_lookup"
+    FOLLOW_UP_LOOKUP = "follow_up_lookup"
+    VISIT_NOTE_LOOKUP = "visit_note_lookup"
+    CARE_HISTORY_LOOKUP = "care_history_lookup"
+    WARNING_SIGN_LOOKUP = "warning_sign_lookup"
+    CHECKIN_HISTORY_LOOKUP = "checkin_history_lookup"
+    UNSUPPORTED_MEDICAL_JUDGMENT = "unsupported_medical_judgment"
+    UNKNOWN = "unknown"
+
+
+class CopilotSourceType(str, Enum):
+    CLINICIAN_DOCUMENT = "clinician_document"
+    PATIENT_NOTE = "patient_note"
+    EPISODE_METADATA = "episode_metadata"
+    CHECKIN = "checkin"
+
+
+class CopilotAuthority(str, Enum):
+    CLINICIAN_RECORD = "clinician_record"
+    PATIENT_RECORD = "patient_record"
+    SYSTEM_METADATA = "system_metadata"
+    CHECKIN_RECORD = "checkin_record"
+
+
+class CopilotAskRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    patient_id: str = Field(min_length=1, max_length=200)
+    question: str = Field(min_length=1, max_length=2000)
+    episode_ids: Optional[list[str]] = None
+
+    @field_validator("patient_id", "question")
+    @classmethod
+    def reject_blank_text(cls, value: str) -> str:
+        if not value.strip():
+            raise ValueError("must not be blank")
+        return value
+
+    @field_validator("episode_ids")
+    @classmethod
+    def validate_episode_ids(cls, value: Optional[list[str]]) -> Optional[list[str]]:
+        if value is None:
+            return None
+        if len(value) > 100:
+            raise ValueError("episode_ids cannot contain more than 100 IDs")
+        if any(not episode_id.strip() for episode_id in value):
+            raise ValueError("episode_ids must contain non-blank IDs")
+        return value
+
+
+class CopilotEvidence(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    evidence_id: str = Field(min_length=1)
+    source_type: CopilotSourceType
+    authority: CopilotAuthority
+    episode_id: str = Field(min_length=1)
+    document_id: Optional[str] = None
+    note_id: Optional[str] = None
+    checkin_id: Optional[str] = None
+    source_label: str = Field(min_length=1)
+    source_field: str = Field(min_length=1)
+    evidence_value: Any
+    is_verbatim: bool = False
+    file_name: Optional[str] = None
+
+
+class CopilotGroundingResult(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    intent: CopilotIntent
+    supported: bool
+    evidence: list[CopilotEvidence] = Field(default_factory=list)
+    related_episode_ids: list[str] = Field(default_factory=list)
+    medical_judgment_detected: bool = False
+
+
+class CopilotAnswerType(str, Enum):
+    GROUNDED = "grounded"
+    UNSUPPORTED = "unsupported"
+    NOT_FOUND = "not_found"
+
+
+class CopilotAnswerSegment(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    text: str = Field(min_length=1, max_length=4000)
+    citation_ids: list[str] = Field(default_factory=list)
+
+
+class CopilotSafety(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    medical_judgment_detected: bool
+    used_only_recorded_care: bool
+    generated_with_llm: bool
+    validation_passed: bool
+
+
+class CopilotAnswerResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    answer: str = Field(min_length=1, max_length=12000)
+    answer_type: CopilotAnswerType
+    supported: bool
+    intent: CopilotIntent
+    segments: list[CopilotAnswerSegment] = Field(default_factory=list)
+    citations: list[CopilotEvidence] = Field(default_factory=list)
+    related_episode_ids: list[str] = Field(default_factory=list)
+    safety: CopilotSafety
