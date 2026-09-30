@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useId, useState, useRef } from 'react'
 import { api } from '../api'
 
 /**
@@ -11,21 +11,22 @@ import { api } from '../api'
 export function DocumentUpload({ episodeId, onUploadComplete, label }) {
   const [state, setState] = useState('idle') // idle | drag | processing | error
   const [errorMessage, setErrorMessage] = useState(null)
-  const [processingLabel, setProcessingLabel] = useState('Reading your document…')
+  const [processingLabel, setProcessingLabel] = useState('Uploading your care document…')
   const fileInputRef = useRef(null)
+  const hintId = useId()
 
   const processFile = async (file) => {
     if (!file) return
 
     setState('processing')
-    setProcessingLabel('Reading your document…')
+    setProcessingLabel('Uploading your care document…')
     setErrorMessage(null)
 
-    // Simulate progress stages for UX
+    // Rotate through honest, user-facing stages while the existing request runs.
     const stages = [
-      'Reading your document…',
-      'Extracting key information…',
-      'Building your care plan…',
+      'Uploading your care document…',
+      'Reading your care document…',
+      'Organising your care journey…',
     ]
     let stageIdx = 0
     const interval = setInterval(() => {
@@ -66,11 +67,11 @@ export function DocumentUpload({ episodeId, onUploadComplete, label }) {
     return (
       <div className="processing-state" role="status" aria-live="polite">
         <span style={{ fontSize: '1.5rem', display: 'block', marginBottom: 'var(--space-3)' }}>📄</span>
-        <p style={{ fontWeight: 500, marginBottom: 'var(--space-2)' }}>{processingLabel}</p>
+        <p className="processing-state__title">{processingLabel}</p>
         <div className="processing-bar" aria-hidden="true">
           <div className="processing-bar__fill" />
         </div>
-        <p className="text-muted">This usually takes 10–20 seconds</p>
+        <p className="text-muted">CareLoop is working on your document. You can stay on this page.</p>
       </div>
     )
   }
@@ -85,14 +86,23 @@ export function DocumentUpload({ episodeId, onUploadComplete, label }) {
         onDrop={handleDrop}
         role="button"
         tabIndex={0}
-        onKeyDown={(e) => e.key === 'Enter' && fileInputRef.current?.click()}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault()
+            fileInputRef.current?.click()
+          }
+        }}
         aria-label={`Upload a file: ${label || 'Drop a document or tap to browse'}`}
+        aria-describedby={hintId}
       >
         <span className="upload-zone__icon" aria-hidden="true">📁</span>
+        <span className="upload-zone__eyebrow">Upload a care document</span>
         <span className="upload-zone__label">
           {label || 'Drop a file or tap to upload'}
         </span>
-        <span className="upload-zone__hint">PDF, photo (JPEG/PNG), or text file</span>
+        <span className="upload-zone__hint" id={hintId}>
+          PDF, photo (JPEG/PNG), or text file. CareLoop will read it and organise the relevant details into your care journey.
+        </span>
       </div>
 
       <input
@@ -100,8 +110,8 @@ export function DocumentUpload({ episodeId, onUploadComplete, label }) {
         type="file"
         accept=".pdf,.jpg,.jpeg,.png,.webp,.txt"
         onChange={handleFileChange}
-        style={{ display: 'none' }}
-        aria-hidden="true"
+        className="visually-hidden"
+        aria-label="Choose a care document to upload"
       />
 
       {state === 'error' && errorMessage && (

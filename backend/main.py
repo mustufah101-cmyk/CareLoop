@@ -10,7 +10,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 import database
-from routers import checkins, documents, during, episodes
+from routers import checkins, copilot, documents, during, episodes
 
 # ── Load environment ──────────────────────────────────────────────────────────
 
@@ -58,6 +58,7 @@ app.include_router(episodes.router)
 app.include_router(documents.router)
 app.include_router(checkins.router)
 app.include_router(during.router)
+app.include_router(copilot.router)
 
 
 # ── Health check ──────────────────────────────────────────────────────────────

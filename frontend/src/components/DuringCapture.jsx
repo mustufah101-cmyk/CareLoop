@@ -7,7 +7,16 @@ import { api } from '../api'
  *
  * Allows patient to type notes or will later support photo capture of handouts.
  */
-export function DuringCapture({ episodeId, onCaptureComplete }) {
+export function DuringCapture({
+  episodeId,
+  onCaptureComplete,
+  questionId,
+  questionText,
+  idPrefix = 'during-notes',
+  label = 'What did you record during the visit?',
+  hint = "Write in your own words. CareLoop will keep this as a patient-entered visit note.",
+  submitLabel = 'Save visit notes',
+}) {
   const [notes, setNotes] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState(null)
@@ -20,7 +29,7 @@ export function DuringCapture({ episodeId, onCaptureComplete }) {
     setError(null)
 
     try {
-      const result = await api.captureDuringNote(episodeId, notes)
+      const result = await api.captureDuringNote(episodeId, notes, questionId, questionText)
       setNotes('')
       onCaptureComplete?.(result)
     } catch (err) {
@@ -32,33 +41,21 @@ export function DuringCapture({ episodeId, onCaptureComplete }) {
 
   return (
     <div>
-      <form onSubmit={handleSubmit} style={{ marginBottom: 'var(--space-6)' }}>
-        <label htmlFor="during-notes" style={{ display: 'block', marginBottom: 'var(--space-2)', fontWeight: 500 }}>
-          What did the clinician say? Any handouts or instructions?
+      <form onSubmit={handleSubmit} className="capture-form">
+        <label htmlFor={`${idPrefix}-notes`} className="form-label">
+          {label}
         </label>
         <textarea
-          id="during-notes"
+          id={`${idPrefix}-notes`}
           value={notes}
           onChange={e => setNotes(e.target.value)}
-          placeholder="Type your notes here… e.g. 'Doctor said take new pills twice a day with food, no driving for a week. Got a handout about wound care.'"
-          style={{
-            width: '100%',
-            minHeight: 120,
-            padding: 'var(--space-3)',
-            border: '1px solid var(--color-line)',
-            borderRadius: 'var(--radius-md)',
-            fontFamily: 'inherit',
-            fontSize: 'var(--text-base)',
-            lineHeight: 'var(--line-height-body)',
-            resize: 'vertical',
-            background: 'var(--color-bg-raised)',
-            color: 'var(--color-ink)',
-          }}
+          placeholder="Type what you remember here…"
+          className="form-control form-control--textarea"
           disabled={submitting}
-          aria-describedby="during-notes-hint"
+          aria-describedby={`${idPrefix}-hint`}
         />
-        <p id="during-notes-hint" style={{ fontSize: 'var(--text-sm)', color: 'var(--color-ink-muted)', marginTop: 'var(--space-2)' }}>
-          Write in your own words. We'll organise this into a clear summary for your timeline.
+        <p id={`${idPrefix}-hint`} className="form-hint">
+          {hint}
         </p>
         {error && (
           <div role="alert" style={{ marginTop: 'var(--space-3)', padding: 'var(--space-3)', background: 'var(--color-flag-bg)', borderLeft: '3px solid var(--color-flag)', borderRadius: 'var(--radius-sm)', color: 'var(--color-flag)' }}>
@@ -72,20 +69,11 @@ export function DuringCapture({ episodeId, onCaptureComplete }) {
             disabled={submitting || !notes.trim()}
             style={{ minWidth: 160 }}
           >
-            {submitting ? 'Saving…' : 'Save visit notes'}
+            {submitting ? 'Saving…' : submitLabel}
           </button>
         </div>
       </form>
 
-      {/* Future: Photo capture for handouts */}
-      <details style={{ marginTop: 'var(--space-4)' }}>
-        <summary style={{ cursor: 'pointer', color: 'var(--color-ink-muted)', fontSize: 'var(--text-sm)' }}>
-          📷 Add a photo of a handout or whiteboard (coming soon)
-        </summary>
-        <p style={{ marginTop: 'var(--space-2)', fontSize: 'var(--text-sm)', color: 'var(--color-ink-muted)' }}>
-          Photo capture will extract text from handouts, whiteboards, or printed instruction sheets given during the visit.
-        </p>
-      </details>
     </div>
   )
 }

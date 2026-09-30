@@ -48,6 +48,15 @@ export const api = {
 
   listEpisodes: (patientId) => request(`/episodes?patient_id=${encodeURIComponent(patientId)}`),
 
+  askCopilot: (patientId, question, episodeIds) => request('/copilot/ask', {
+    method: 'POST',
+    body: JSON.stringify({
+      patient_id: patientId,
+      question,
+      ...(episodeIds ? { episode_ids: episodeIds } : {}),
+    }),
+  }),
+
   // ── Documents ─────────────────────────────────────────────────────────────
 
   uploadDocument: (episodeId, file) => {
@@ -81,10 +90,13 @@ export const api = {
 
   // ── During-flow ───────────────────────────────────────────────────────────
 
-  captureDuringNote: (episodeId, notes) =>
+  captureDuringNote: (episodeId, notes, questionId, questionText) =>
     request(`/episodes/${episodeId}/during`, {
       method: 'POST',
-      body: JSON.stringify({ notes }),
+      body: JSON.stringify({
+        notes,
+        ...(questionId && questionText ? { question_id: questionId, question_text: questionText } : {}),
+      }),
     }),
 
   getDuringNotes: (episodeId) => request(`/episodes/${episodeId}/during`),

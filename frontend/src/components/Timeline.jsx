@@ -5,6 +5,7 @@ import { CheckinCard } from './CheckinCard'
 import { DocumentUpload } from './DocumentUpload'
 import { SourceTag } from './SourceTag'
 import { DuringCapture } from './DuringCapture'
+import { PreparedQuestionCard } from './PreparedQuestionCard'
 import { api } from '../api'
 
 /**
@@ -17,6 +18,7 @@ export function Timeline({ episode, onEpisodeUpdate }) {
   const [simulatingDay, setSimulatingDay] = useState(null)
   const [simulatedCheckin, setSimulatedCheckin] = useState(null)
   const [simulateDayInput, setSimulateDayInput] = useState('')
+  const [recentlyProcessedPhase, setRecentlyProcessedPhase] = useState(null)
 
   const handleSimulateDay = async () => {
     const day = parseInt(simulateDayInput, 10)
@@ -32,7 +34,8 @@ export function Timeline({ episode, onEpisodeUpdate }) {
     }
   }
 
-  const handleUploadComplete = (result) => {
+  const handleUploadComplete = (phase) => {
+    setRecentlyProcessedPhase(phase)
     // Refresh episode data after upload
     api.getEpisode(episode.episode_id).then(updated => onEpisodeUpdate?.(updated))
   }
@@ -50,6 +53,30 @@ export function Timeline({ episode, onEpisodeUpdate }) {
   const hasAfter = !!episode.after
   const hasDuring = episode.during?.length > 0
   const hasCheckins = episode.checkins?.length > 0
+  const dischargeDocument = episode.documents.find(d => d.doc_type === 'discharge_summary')
+  const checkinsComplete = hasCheckins && episode.checkins.every(checkin => checkin.response || checkin.simulated)
+  const phaseReady = [hasBefore, hasDuring, hasAfter, checkinsComplete]
+  const currentPhaseIndex = phaseReady.findIndex(ready => !ready)
+  const allPhasesComplete = currentPhaseIndex === -1
+  const activePhaseIndex = currentPhaseIndex === -1 ? phaseReady.length - 1 : currentPhaseIndex
+  const phaseNames = [
+    'Before your appointment',
+    'During your appointment',
+    'After your appointment',
+    'Check-ins',
+  ]
+  const phaseStatus = (index) => {
+    if (allPhasesComplete) return 'completed'
+    if (index < activePhaseIndex) return 'completed'
+    if (index === activePhaseIndex) return 'current'
+    return 'upcoming'
+  }
+  const phaseStatusLabel = (status) => ({
+    completed: 'Completed',
+    current: 'Current',
+    upcoming: 'Upcoming',
+  }[status])
+  const activePhaseName = allPhasesComplete ? 'Check-ins are up to date' : phaseNames[activePhaseIndex]
 
   return (
     <div>
@@ -63,7 +90,10 @@ export function Timeline({ episode, onEpisodeUpdate }) {
           Started {new Date(episode.created_at).toLocaleDateString('en-GB', {
             day: 'numeric', month: 'long', year: 'numeric'
           })}
-          {' · '}Episode ID: <code style={{ fontSize: 'var(--text-sm)' }}>{episode.episode_id.slice(0, 8)}</code>
+        </p>
+        <p className="episode-header__progress">
+          <span className="episode-header__progress-marker" aria-hidden="true">→</span>
+          You are here: <strong>{activePhaseName}</strong>
         </p>
       </div>
 
@@ -71,22 +101,44 @@ export function Timeline({ episode, onEpisodeUpdate }) {
       <div className="timeline-layout">
 
         {/* ── BEFORE PHASE ──────────────────────────────────────────── */}
-        <div className="timeline-spine">
-          <div className={`timeline-dot ${hasBefore ? 'timeline-dot--filled' : ''}`} aria-hidden="true" />
+        <div className={'timeline-spine timeline-spine--' + phaseStatus(0)}>
+          <div className={'timeline-dot timeline-dot--' + phaseStatus(0)} aria-hidden="true" />
         </div>
-        <div className="timeline-content">
-          <p className="phase-label">Before the appointment</p>
+        <div className={'timeline-content timeline-phase timeline-phase--' + phaseStatus(0)} role="region" aria-labelledby="phase-before-heading">
+          <h2 className="phase-label" id="phase-before-heading">
+            <span className="phase-label__text">Before your appointment</span>
+            <span className={'phase-status phase-status--' + phaseStatus(0)}>{phaseStatusLabel(phaseStatus(0))}</span>
+          </h2>
 
           {!hasBefore ? (
-            <div>
+            <div className="phase-empty">
+              {recentlyProcessedPhase === 'before' && (
+                <div className="phase-success" role="status" aria-live="polite">
+                  <span className="phase-success__icon" aria-hidden="true">✓</span>
+                  <div>
+                    <strong>Care document processed</strong>
+                    <p>Your care journey is ready to review.</p>
+                  </div>
+                </div>
+              )}
+              <p className="phase-empty__message">Upload your appointment letter to see preparation steps and questions here.</p>
               <DocumentUpload
                 episodeId={episode.episode_id}
                 label="Upload your appointment letter to get started"
-                onUploadComplete={handleUploadComplete}
+                onUploadComplete={() => handleUploadComplete('before')}
               />
             </div>
           ) : (
             <div>
+              {recentlyProcessedPhase === 'before' && (
+                <div className="phase-success" role="status" aria-live="polite">
+                  <span className="phase-success__icon" aria-hidden="true">✓</span>
+                  <div>
+                    <strong>Care document processed</strong>
+                    <p>Your care journey is ready to review.</p>
+                  </div>
+                </div>
+              )}
               {/* Checklist */}
               {episode.before.checklist?.length > 0 && (
                 <div style={{ marginBottom: 'var(--space-6)' }}>
@@ -102,6 +154,8 @@ export function Timeline({ episode, onEpisodeUpdate }) {
                       done={item.done}
                       sourceField={item.source_field}
                       extractedJson={episode.documents.find(d => d.doc_type === 'appointment_letter')?.extracted_json}
+                      sourceLabel="your appointment letter"
+                      sourceDocument={episode.documents.find(d => d.doc_type === 'appointment_letter')}
                       animDelay={i}
                     />
                   ))}
@@ -112,7 +166,7 @@ export function Timeline({ episode, onEpisodeUpdate }) {
               {episode.before.suggested_questions?.length > 0 && (
                 <div style={{ marginBottom: 'var(--space-6)' }}>
                   <h2 style={{ marginBottom: 'var(--space-4)', fontFamily: 'var(--font-headline)' }}>
-                    Questions to ask your clinician
+                    Questions to ask
                   </h2>
                   {episode.before.suggested_questions.map((q, i) => (
                     <div
@@ -127,6 +181,9 @@ export function Timeline({ episode, onEpisodeUpdate }) {
                       <SourceTag
                         sourceField={q.source_field}
                         extractedJson={episode.documents.find(d => d.doc_type === 'appointment_letter')?.extracted_json}
+                        documentLabel="your appointment letter"
+                        documentName={episode.documents.find(d => d.doc_type === 'appointment_letter')?.file_name}
+                        displayText={q.question}
                       />
                     </div>
                   ))}
@@ -141,7 +198,7 @@ export function Timeline({ episode, onEpisodeUpdate }) {
                 <div style={{ marginTop: 'var(--space-3)' }}>
                   <DocumentUpload
                     episodeId={episode.episode_id}
-                    onUploadComplete={handleUploadComplete}
+                    onUploadComplete={() => handleUploadComplete('before')}
                   />
                 </div>
               </details>
@@ -150,14 +207,34 @@ export function Timeline({ episode, onEpisodeUpdate }) {
         </div>
 
         {/* ── DURING PHASE ──────────────────────────────────────────── */}
-        <div className="timeline-spine">
-          <div className={`timeline-dot ${hasDuring ? 'timeline-dot--filled' : ''}`} aria-hidden="true" />
+        <div className={'timeline-spine timeline-spine--' + phaseStatus(1)}>
+          <div className={'timeline-dot timeline-dot--' + phaseStatus(1)} aria-hidden="true" />
         </div>
-        <div className="timeline-content">
-          <p className="phase-label">During the appointment</p>
+        <div className={'timeline-content timeline-phase timeline-phase--' + phaseStatus(1)} role="region" aria-labelledby="phase-during-heading">
+          <h2 className="phase-label" id="phase-during-heading">
+            <span className="phase-label__text">During your appointment</span>
+            <span className={'phase-status phase-status--' + phaseStatus(1)}>{phaseStatusLabel(phaseStatus(1))}</span>
+          </h2>
 
           {!hasDuring ? (
-            <div>
+            <div className="phase-empty">
+              {episode.before?.suggested_questions?.length > 0 && (
+                <div className="prepared-questions-during">
+                  <h3 className="prepared-questions-during__heading">Questions you prepared</h3>
+                  <p className="prepared-questions-during__intro">Keep these questions with you during the appointment. Add what you heard when you are ready.</p>
+                  {episode.before.suggested_questions.map((question, i) => (
+                    <PreparedQuestionCard
+                      key={question.question_id || i}
+                      question={question}
+                      episodeId={episode.episode_id}
+                      extractedJson={episode.documents.find(d => d.doc_type === 'appointment_letter')?.extracted_json}
+                      documentName={episode.documents.find(d => d.doc_type === 'appointment_letter')?.file_name}
+                      onCaptureComplete={handleDuringCapture}
+                    />
+                  ))}
+                </div>
+              )}
+              <p className="phase-empty__message">Add notes from your appointment here to keep instructions in one place.</p>
               <DuringCapture
                 episodeId={episode.episode_id}
                 onCaptureComplete={handleDuringCapture}
@@ -165,7 +242,38 @@ export function Timeline({ episode, onEpisodeUpdate }) {
             </div>
           ) : (
             <div>
-              {episode.during.map((note, i) => (
+              {episode.before?.suggested_questions?.length > 0 && (
+                <div className="prepared-questions-during">
+                  <h3 className="prepared-questions-during__heading">Questions you prepared</h3>
+                  <p className="prepared-questions-during__intro">Your notes stay clearly marked as information you recorded during the visit.</p>
+                  {episode.before.suggested_questions.map((question, i) => (
+                    <PreparedQuestionCard
+                      key={question.question_id || i}
+                      question={question}
+                      answerNotes={episode.during.filter(note => note.question_id === question.question_id)}
+                      episodeId={episode.episode_id}
+                      extractedJson={episode.documents.find(d => d.doc_type === 'appointment_letter')?.extracted_json}
+                      documentName={episode.documents.find(d => d.doc_type === 'appointment_letter')?.file_name}
+                      onCaptureComplete={handleDuringCapture}
+                    />
+                  ))}
+                </div>
+              )}
+              {episode.during.some(note => note.question_id) && (
+                <div className="question-recap" aria-label="Questions discussed">
+                  <h3>Questions discussed</h3>
+                  <p>These are the questions with a note recorded during this visit.</p>
+                </div>
+              )}
+              {episode.before?.suggested_questions?.some(question =>
+                !episode.during.some(note => note.question_id === question.question_id)
+              ) && (
+                <div className="question-recap question-recap--muted" aria-label="Still unanswered questions">
+                  <h3>Still unanswered</h3>
+                  <p>No answer recorded yet for one or more prepared questions.</p>
+                </div>
+              )}
+              {episode.during.filter(note => !note.question_id).map((note, i) => (
                 <div
                   key={note.note_id}
                   className={`card card-animate card-animate-delay-${Math.min(i, 7)}`}
@@ -214,22 +322,44 @@ export function Timeline({ episode, onEpisodeUpdate }) {
         </div>
 
         {/* ── AFTER PHASE ───────────────────────────────────────────── */}
-        <div className="timeline-spine">
-          <div className={`timeline-dot ${hasAfter ? 'timeline-dot--filled' : ''}`} aria-hidden="true" />
+        <div className={'timeline-spine timeline-spine--' + phaseStatus(2)}>
+          <div className={'timeline-dot timeline-dot--' + phaseStatus(2)} aria-hidden="true" />
         </div>
-        <div className="timeline-content">
-          <p className="phase-label">After the appointment</p>
+        <div className={'timeline-content timeline-phase timeline-phase--' + phaseStatus(2)} role="region" aria-labelledby="phase-after-heading">
+          <h2 className="phase-label" id="phase-after-heading">
+            <span className="phase-label__text">After your appointment</span>
+            <span className={'phase-status phase-status--' + phaseStatus(2)}>{phaseStatusLabel(phaseStatus(2))}</span>
+          </h2>
 
           {!hasAfter ? (
-            <div>
+            <div className="phase-empty">
+              {recentlyProcessedPhase === 'after' && (
+                <div className="phase-success" role="status" aria-live="polite">
+                  <span className="phase-success__icon" aria-hidden="true">✓</span>
+                  <div>
+                    <strong>Care document processed</strong>
+                    <p>Your care journey is ready to review.</p>
+                  </div>
+                </div>
+              )}
+              <p className="phase-empty__message">Upload your discharge summary to build your recovery plan and follow-up details.</p>
               <DocumentUpload
                 episodeId={episode.episode_id}
                 label="Upload your discharge summary to generate a recovery plan"
-                onUploadComplete={handleUploadComplete}
+                onUploadComplete={() => handleUploadComplete('after')}
               />
             </div>
           ) : (
             <div>
+              {recentlyProcessedPhase === 'after' && (
+                <div className="phase-success" role="status" aria-live="polite">
+                  <span className="phase-success__icon" aria-hidden="true">✓</span>
+                  <div>
+                    <strong>Care document processed</strong>
+                    <p>Your care journey is ready to review.</p>
+                  </div>
+                </div>
+              )}
               {/* Medications summary */}
               {episode.after.medications_summary?.length > 0 && (
                 <div style={{ marginBottom: 'var(--space-6)' }}>
@@ -244,6 +374,8 @@ export function Timeline({ episode, onEpisodeUpdate }) {
                       done={false}
                       sourceField={med.source_field}
                       extractedJson={episode.documents.find(d => d.doc_type === 'discharge_summary')?.extracted_json}
+                      sourceLabel="your discharge summary"
+                      sourceDocument={episode.documents.find(d => d.doc_type === 'discharge_summary')}
                       animDelay={i}
                     />
                   ))}
@@ -276,6 +408,8 @@ export function Timeline({ episode, onEpisodeUpdate }) {
                           done={false}
                           sourceField={instr.source_field}
                           extractedJson={episode.documents.find(d => d.doc_type === 'discharge_summary')?.extracted_json}
+                          sourceLabel="your discharge summary"
+                          sourceDocument={episode.documents.find(d => d.doc_type === 'discharge_summary')}
                           animDelay={mi + ii}
                         />
                       ))}
@@ -296,6 +430,8 @@ export function Timeline({ episode, onEpisodeUpdate }) {
                       text={`${f.plain_instruction}${f.timeframe ? ` — ${f.timeframe}` : ''}`}
                       sourceField={f.source_field}
                       extractedJson={episode.documents.find(d => d.doc_type === 'discharge_summary')?.extracted_json}
+                      documentLabel="your discharge summary"
+                      sourceDocument={episode.documents.find(d => d.doc_type === 'discharge_summary')}
                       animDelay={i}
                     />
                   ))}
@@ -306,37 +442,35 @@ export function Timeline({ episode, onEpisodeUpdate }) {
         </div>
 
         {/* ── CHECK-INS PHASE ───────────────────────────────────────── */}
-        <div className="timeline-spine">
-          <div className={`timeline-dot ${hasCheckins ? 'timeline-dot--filled' : ''}`} aria-hidden="true" />
+        <div className={'timeline-spine timeline-spine--' + phaseStatus(3)}>
+          <div className={'timeline-dot timeline-dot--' + phaseStatus(3)} aria-hidden="true" />
         </div>
-        <div className="timeline-content">
-          <p className="phase-label">Check-ins</p>
+        <div className={'timeline-content timeline-phase timeline-phase--' + phaseStatus(3)} role="region" aria-labelledby="phase-checkins-heading">
+          <h2 className="phase-label" id="phase-checkins-heading">
+            <span className="phase-label__text">Check-ins</span>
+            <span className={'phase-status phase-status--' + phaseStatus(3)}>{phaseStatusLabel(phaseStatus(3))}</span>
+          </h2>
 
           {!hasCheckins ? (
-            <p className="text-muted">
-              Check-ins will appear here once you upload your discharge summary.
+            <p className="phase-empty text-muted">
+              Your scheduled check-ins will appear here after you upload your discharge summary.
             </p>
           ) : (
             <div>
               {/* ── Simulate Day N — Demo control ─────────────────────── */}
-              <div
-                style={{
-                  marginBottom: 'var(--space-6)',
-                  padding: 'var(--space-4)',
-                  background: '#FFFBEB',
-                  border: '1px solid #F4CA64',
-                  borderRadius: 'var(--radius-md)',
-                }}
-              >
+              <details className="demo-controls">
+                <summary>Demo controls</summary>
+                <div className="demo-controls__body">
                 <div className="demo-badge" style={{ marginBottom: 'var(--space-3)' }}>
                   🎮 Demo control
                 </div>
                 <p style={{ fontSize: 'var(--text-sm)', marginBottom: 'var(--space-3)', color: 'var(--color-ink-muted)' }}>
-                  In production, check-ins are sent automatically. For the demo, trigger one manually:
+                  These check-ins normally arrive automatically. For this demo, you can trigger one manually:
                 </p>
                 <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center', flexWrap: 'wrap' }}>
-                  <span style={{ fontSize: 'var(--text-sm)', fontWeight: 500 }}>Simulate Day</span>
+                  <label htmlFor="simulate-day" style={{ fontSize: 'var(--text-sm)', fontWeight: 500 }}>Simulate day</label>
                   <input
+                    id="simulate-day"
                     type="number"
                     min="1"
                     max="30"
@@ -364,7 +498,8 @@ export function Timeline({ episode, onEpisodeUpdate }) {
                 <p style={{ fontSize: 'var(--text-sm)', marginTop: 'var(--space-2)', color: 'var(--color-ink-muted)', fontStyle: 'italic' }}>
                   Available days: {episode.checkins.map(c => `Day ${c.scheduled_for_day}`).join(', ')}
                 </p>
-              </div>
+                </div>
+              </details>
 
               {/* Rendered check-in cards */}
               {episode.checkins
@@ -374,6 +509,9 @@ export function Timeline({ episode, onEpisodeUpdate }) {
                     key={checkin.checkin_id}
                     checkin={checkin}
                     episodeId={episode.episode_id}
+                    documentLabel="your discharge summary"
+                    sourceDocument={dischargeDocument}
+                    extractedJson={dischargeDocument?.extracted_json}
                     onRespond={handleCheckinRespond}
                     animDelay={i}
                   />
@@ -385,6 +523,9 @@ export function Timeline({ episode, onEpisodeUpdate }) {
                 <CheckinCard
                   checkin={simulatedCheckin.checkin}
                   episodeId={episode.episode_id}
+                  documentLabel="your discharge summary"
+                  sourceDocument={dischargeDocument}
+                  extractedJson={dischargeDocument?.extracted_json}
                   onRespond={handleCheckinRespond}
                   animDelay={0}
                 />
@@ -410,7 +551,15 @@ export function Timeline({ episode, onEpisodeUpdate }) {
                       }}
                     >
                       <span style={{ fontSize: '0.85rem' }}>○</span>
-                      <span>Day {c.scheduled_for_day} — {c.prompt_text}</span>
+                      <span><strong>Day {c.scheduled_for_day}</strong> — {c.prompt_text}</span>
+                      <SourceTag
+                        sourceField={c.source_field}
+                        extractedJson={dischargeDocument?.extracted_json}
+                        documentLabel="your discharge summary"
+                        documentName={dischargeDocument?.file_name}
+                        displayText={c.prompt_text}
+                        whyLabel="Why am I being asked this?"
+                      />
                     </div>
                   ))}
                 </div>

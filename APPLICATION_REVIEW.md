@@ -1,8 +1,589 @@
 # CareLoop Application Review
-**Date:** 2026-09-27  
+**Date:** 2026-09-27
+
+## Stage 1 UI and accessibility update — 2026-09-28
+
+The frontend UI foundation was polished without changing backend logic, API contracts, medical logic, extraction or generation behavior, check-in flagging, episode persistence, source-tag behavior, or the Before → During → After → Check-ins journey.
+
+Implemented and verified:
+
+- Wider centered content layout: the main timeline and episode header now use a 980px maximum width while remaining readable.
+- More consistent spacing and typography, with the small text token raised to 16px.
+- Simpler CareLoop header context while preserving the existing navigation.
+- Large-text and high-contrast controls retain their functionality and now have clearer accessible names, tooltips, visible labels, and 44px minimum sizing.
+- Visible focus treatment for buttons, controls, forms, and the upload zone.
+- Upload guidance now explains what can be uploaded and how CareLoop uses the document; Enter and Space activate the upload zone.
+- During-visit notes, check-in text responses, and the demo day input have visible labels.
+- Check-in submission failures and saving status are surfaced in the UI without changing the response API behavior.
+- Existing source tags and source traceability paths were preserved.
+- The timeline structure was not redesigned in this stage.
+
+Validation:
+
+- `npm.cmd run build` passes.
+- `npm.cmd run lint` completes with seven existing warnings in `EpisodePage.jsx`, `ActionItem.jsx`, `SourceTag.jsx`, and `Timeline.jsx`; no backend files were changed.
+
+## Stage 2 timeline hierarchy update — 2026-09-28
+
+The timeline hierarchy was redesigned within the existing frontend structure. No backend files, API contracts, data flow, medical logic, extraction/generation behavior, check-in flagging, persistence, or individual source-tag/content component behavior was changed.
+
+Implemented and verified:
+
+- Phase labels are sentence-case semantic headings: Before your appointment, During your appointment, After your appointment, and Check-ins.
+- The existing vertical spine is visually strengthened with distinct completed, current, and upcoming markers.
+- Status is communicated with text labels and marker symbols in addition to color.
+- Phase status is derived only from existing episode data: loaded phase content, scheduled check-ins, and existing responses/simulated check-ins.
+- The episode ID was removed from the patient-facing episode header.
+- The header now shows a subtle current-step indication without a percentage or claim about medical recovery.
+- Empty phases remain connected to the spine and receive an upcoming/empty treatment when applicable.
+- Mobile spacing and marker sizing were adjusted to keep the journey readable without excessive horizontal use.
+- Stage 1 accessibility controls, focus states, form labels, upload keyboard activation, source tags, and source traceability were preserved.
+
+## Stage 3 appearance, preferences, and card hierarchy update — 2026-09-28
+
+Stage 3 adds frontend-only appearance and accessibility preference controls plus clearer patient-facing card hierarchy. Backend logic, API contracts, medical logic, extraction/generation behavior, flagging, persistence, the four-phase journey, and source traceability behavior remain unchanged.
+
+Implemented and verified:
+
+- Light, dark, and system appearance modes are available from one accessible “Accessibility & appearance” panel.
+- System mode follows the operating system color-scheme preference through CSS media queries.
+- Appearance, large-text, and high-contrast preferences persist in localStorage when browser storage is available.
+- High contrast remains independent from dark mode, including a dedicated dark-plus-high-contrast palette.
+- Reduced-motion preferences disable the card stagger animation and minimize transitions.
+- Action, information, check-in, and warning cards now include visible type labels, symbols, borders, and spacing distinctions instead of relying on color alone.
+- Source tags use patient-facing wording such as “From your discharge summary” while their expansion still exposes the original extracted source value and field context.
+- The existing Stage 1/2 responsive timeline and accessibility focus behavior were preserved.
+
+QA note: the production frontend build passes and lint completes with the repository’s existing warnings. Interactive browser verification was not available in this environment; code-level checks covered the theme selectors, preference persistence, reduced-motion media query, responsive rules, source expansion markup, and card states.
+
+## Stage 4 demo polish and responsive refinement — 2026-09-28
+
+Stage 4 refines the existing frontend states without changing backend behavior, API contracts, medical wording, source grounding, flagging, persistence, or the Before → During → After → Check-ins structure.
+
+Implemented and verified:
+
+- Upload processing now uses honest user-facing stages: uploading the care document, reading the care document, and organising the care journey.
+- Processing uses an indeterminate visual treatment rather than a fabricated completion percentage, and reduced motion disables it.
+- Successful document refreshes show a calm “Care document processed” confirmation within the relevant timeline phase.
+- Before, During, After, and Check-ins empty states now explain what will appear and the next patient action.
+- Demo simulation is retained for judging but is collapsed under a clearly labeled “Demo controls” disclosure.
+- Existing timeline population animation remains short and is disabled/minimized under reduced motion.
+- Responsive refinements cover tablet and narrow mobile widths, including cards, upload areas, header controls, heading wrapping, and timeline spacing.
+- Patient-facing connection/loading copy no longer exposes backend startup terminology.
+
+Validation:
+
+- npm.cmd run build passes.
+- npm.cmd run lint completes with five existing warnings in EpisodePage.jsx, ActionItem.jsx, and Timeline.jsx.
+- git diff --check passes.
+- No backend files were modified.
+
+## Stage 5 final frontend QA and presentation polish — 2026-09-28
+
+Stage 5 is a frontend-only cleanup pass that preserves the Stage 1–4 journey, appearance preferences, accessibility behavior, source traceability, and all existing data/API behavior.
+
+Implemented and verified:
+
+- Removed the unfinished “Add a photo of a handout or whiteboard (coming soon)” control from the patient-facing During phase.
+- Kept demo-only simulation inside the existing collapsed “Demo controls” section.
+- Reduced phase-status repetition to the concise labels “Completed,” “Current,” and “Upcoming,” while retaining the separate “You are here” orientation message.
+- Improved source expansion semantics with explicit button type, controlled content IDs, and an accessible source-information region; original source fields remain visible.
+- Added theme-aware demo badge, primary-button hover, placeholder, and high-contrast styling for light, dark, system, large-text, and combined accessibility modes.
+- Replaced remaining application-authored backend startup wording with calm patient-facing connection guidance.
+- Preserved keyboard focus treatment, upload activation, source expansion, check-in controls, demo disclosure behavior, reduced motion, and responsive layout rules.
+
+Validation:
+
+- npm.cmd run build passes.
+- npm.cmd run lint completes with five existing warnings in EpisodePage.jsx, ActionItem.jsx, and Timeline.jsx.
+- git diff --check passes.
+- No backend files were modified.
+- Browser interactions were not claimed as tested; validation was code-level plus production build/lint/diff checks.
+
+## Stage 6 application shell, navigation, and episode pages — 2026-09-29
+
+Stage 6 adds frontend-only application structure while preserving the existing detailed episode Timeline, Stage 1–5 accessibility and appearance behavior, source traceability, and all API/data behavior.
+
+Implemented:
+
+- Added lightweight hash routing for Dashboard, Care Journey, episode detail, Copilot, and unknown-route states.
+- Root navigation now leads to Dashboard; browser hash history supports back and forward navigation.
+- Added persistent desktop navigation and labeled mobile bottom navigation with `aria-current="page"` for the active area.
+- Preserved the global Accessibility & appearance panel and localStorage-backed Light, Dark, System, Large Text, and High Contrast preferences across route changes.
+- Adapted EpisodePage to retrieve an existing episode using `api.getEpisode` from the route ID, while keeping the existing Timeline intact.
+- Added a patient-facing “Back to Care Journey” affordance without exposing the technical episode ID.
+- Added Care Journey using the existing `listEpisodes` API, showing only real returned episode metadata and links to detailed journeys.
+- Added Dashboard using real episode counts, document/phase presence, completed check-ins, and backend-confirmed flagged check-ins only. No global action completion claims or fabricated patient information are shown.
+- Added a non-functional Copilot page shell with clearly labeled future question examples and no AI/API behavior.
+- Extended the existing warm design system with responsive page shells, episode cards, navigation, mobile safe-area spacing, focus-compatible links, and accessible empty/loading/error states.
+
+Validation:
+
+- npm.cmd run build passes.
+- npm.cmd run lint completes with five non-blocking warnings in EpisodePage.jsx, ActionItem.jsx, and Timeline.jsx; no lint errors occur.
+- git diff --check passes.
+- No backend files or API contracts were modified.
+- Browser interaction validation was not claimed because the in-app browser was unavailable; route parsing, navigation markup, data usage, and accessibility behavior were reviewed in code and validated through the production build.
+
+## Stage 7 Dashboard and Care Journey UX polish — 2026-09-29
+
+Stage 7 refines the frontend presentation of the Dashboard and Care Journey without changing APIs, backend behavior, medical logic, persistence, source traceability, appearance settings, or the detailed episode Timeline.
+
+Implemented:
+
+- Dashboard now has explicit Care overview, Recent care journeys, Follow-up activity, and CareLoop Copilot sections.
+- Recent journeys are ordered by `created_at` only when a valid date is available; the UI does not reinterpret it as an appointment date or update date.
+- Follow-up activity counts only completed/responded or simulated check-ins, and separately surfaces backend-provided flagged check-ins.
+- Dashboard avoids fabricated appointments, medications, allergies, vitals, treatment status, and non-persisted task completion counts.
+- Added a shared EpisodeSummaryCard for consistent scanning across Dashboard and Care Journey.
+- Care Journey now presents real episodes in a calm longitudinal history grouped by the year they were added, with a separate honest fallback when a date is unavailable.
+- Episode cards show only grounded title/type, added date, phase-data presence, document count, completed/unanswered check-in counts, flagged check-ins, and a clear “View journey” action.
+- Added responsive card stacking, timeline rails, heading/action wrapping, and mobile-safe spacing while preserving Light, Dark, System, Large Text, High Contrast, and focus behavior.
+
+Validation:
+
+- npm.cmd run build passes.
+- npm.cmd run lint completes with five non-blocking warnings in EpisodePage.jsx, ActionItem.jsx, and Timeline.jsx; no lint errors occur.
+- git diff --check passes.
+- No backend files or API contracts were modified.
+- Browser interaction validation was not claimed because the in-app browser was unavailable; responsive and accessibility behavior was reviewed through code and production build checks.
+## Stage 8 journey creation and episode-card refinement — 2026-09-29
+
+Stage 8 keeps the existing frontend data flow and API contract intact while making new care journey creation explicit and patient-friendly. The existing `createEpisode(patient_id, appointment_type)` contract already supported the requested label, so no backend or API changes were required.
+
+Implemented:
+
+- Added a shared accessible creation dialog asking “What is this care for?” with a visible label, short-name validation, an 80-character limit, character count, Cancel and Start journey actions, focus placement on open, Escape handling, and disabled/loading states.
+- Care Journey and episode detail now pass the patient-entered label to the existing `createEpisode` API and navigate to the newly created episode detail page on success.
+- Removed one-click generic creation from the Care Journey flow and removed automatic generic episode creation when the episode detail route has no selected episode.
+- Preserved `appointment_type` as the primary episode title, with the existing calm fallback when it is unavailable; technical episode IDs remain hidden from patient-facing titles.
+- Added a compact Dashboard card treatment that prioritizes journey title, grounded added date, phase/activity details, check-in information, and the View journey action. Care Journey cards remain more spacious.
+- Preserved source traceability, the Before → During → After → Check-ins journey, appearance preferences, Large Text, High Contrast, keyboard focus behavior, and responsive layout foundations.
+
+Validation:
+
+- Production build passes. Lint completes with five existing non-blocking warnings in ActionItem.jsx, Timeline.jsx, and the pre-existing EpisodePage.jsx effect; there are no lint errors and the new creation dialog adds no warning.
+- git diff --check was run.
+- No backend files or API contracts were modified.
+- Browser interaction validation was not claimed because the in-app browser was unavailable; the creation flow and responsive states were reviewed in code and through the production build checks.
+
+## Stage 9A Copilot grounding contract and deterministic retrieval — 2026-09-29
+
+Stage 9A adds only the backend grounding foundation for the approved CareLoop Copilot architecture. It does not add a Copilot API endpoint, call an LLM for Copilot answers, persist conversations, or modify the frontend.
+
+Implemented:
+
+- Added strict Pydantic models for Copilot requests, closed intent categories, provenance-aware evidence, and grounding results.
+- Added deterministic intent classification with an explicit `unknown` fallback and an `unsupported_medical_judgment` category.
+- Added deterministic retrieval over patient-owned episode data with optional episode scope filtering.
+- Whitelisted document instruction, follow-up, warning-sign, visit-note, care-history, and check-in fields by intent.
+- Preserved clinician-document, patient-note, episode-metadata, and check-in provenance. Structured extracted values are marked `is_verbatim=false`; raw patient notes are marked verbatim only when they are the stored note text.
+- Prevented patient notes from being returned as clinician-document evidence and preserved conflicting clinician-document values rather than resolving them silently.
+- Stored document/note content is treated only as data; prompt-injection strings do not affect classifier or retrieval control flow.
+- No general medical knowledge or generated answer is produced. Unsupported medical-judgment requests return grounding metadata only, with no answer text.
+
+Validation:
+
+- Added 14 deterministic backend tests covering retrieval, provenance, missing/no-record behavior, conflicts, prompt-injection content, episode scope, patient isolation, and unsupported medical questions.
+- Backend test suite passes with `python -m unittest discover -s tests -v`.
+- No LLM call, frontend change, Copilot endpoint, conversation persistence, vector search, or existing extraction/generation behavior was added or changed.
+- `git diff --check` was run.
+
+## Stage 9B deterministic Copilot grounding API — 2026-09-29
+
+Stage 9B exposes the Stage 9A grounding layer through `POST /api/copilot/ground`. The endpoint returns only the closed intent, supported state, provenance-aware evidence, related episode IDs, and medical-judgment detection. It does not generate conversational answers.
+
+Implemented:
+
+- Added and registered a dedicated `backend/routers/copilot.py` router.
+- Added request validation for missing or blank patient IDs, empty or whitespace-only questions, questions over 2,000 characters, and malformed or oversized episode ID lists.
+- Enforced patient scoping and optional episode scoping through the existing deterministic grounding layer. Episodes belonging to another patient are filtered without revealing their existence.
+- Added safe server-error handling with a patient-safe message and metadata-only logging: request ID, intent, evidence count, and supported state. Questions, document text, and patient notes are not logged.
+- Preserved unsupported medical-judgment behavior: the endpoint returns grounding metadata only and never produces a diagnosis or treatment answer.
+- Preserved clinician-document and patient-note provenance and conflicting evidence.
+
+Validation:
+
+- The combined backend suite passes: 33 tests, including Stage 9A grounding tests and Stage 9B API tests.
+- Backend compilation passes.
+- `git diff --check` passes.
+- No frontend files were modified.
+- No LLM answer generation, conversation persistence, vector search, or existing extraction/generation behavior was added or changed.
+
+## Stage 9C grounded Copilot answer generation — 2026-09-29
+
+Stage 9C adds structured, evidence-only Copilot answers through `POST /api/copilot/ask`. The existing `/api/copilot/ground` endpoint remains available for deterministic grounding and debugging. No frontend changes or conversation persistence were added.
+
+Implemented:
+
+- Added strict answer models for segments, citation IDs, answer types, and safety metadata.
+- Added deterministic answer construction for instruction, follow-up, warning-sign, visit-note, care-history, and check-in lookups.
+- Deterministic answers are preferred and do not call an LLM.
+- Added a dedicated Copilot synthesis generator for explicitly multi-record summary questions. Its input is limited to the patient question and retrieved evidence/provenance; it receives no full database, prior assistant answers, or external medical context.
+- Added post-generation validation for citation existence, segment citations, support/evidence consistency, provenance, and obvious unsupported medical claims.
+- Invalid or malformed LLM output falls back to a safe source-grounded response and is not exposed to the client.
+- Unsupported medical-judgment questions return no diagnosis or treatment recommendation. Related recorded warning signs may be surfaced separately when deterministic grounding finds them.
+- Not-found questions return “I could not find that information in your recorded care.” without general medical fallback.
+- Stored prompt-injection text remains data and cannot alter Copilot control flow.
+- Logging contains request metadata, intent, evidence count, answer type, LLM-used state, and validation state only; full questions, notes, documents, and answers are not logged.
+
+Validation:
+
+- Combined Copilot backend suite passes: 54 tests.
+- Tests cover deterministic answers, unsupported and not-found behavior, citations, provenance, conflicts, prompt injection, cross-patient isolation, malformed LLM output, unsafe claims, and no-LLM simple queries.
+- Backend compilation passes.
+- `git diff --check` passes.
+- No frontend files were modified and no conversation persistence was added.
+
+## Stage 9D Copilot frontend — 2026-09-29
+
+Stage 9D replaces the Copilot placeholder with a frontend-only chat interface backed by the existing `POST /api/copilot/ask` contract. Backend grounding, answer validation, provenance, and safety behavior remain unchanged.
+
+Implemented:
+
+- Added `api.askCopilot`, preserving the structured answer response including answer type, intent, segments, citations, safety metadata, and related episode IDs.
+- Added frontend-held conversation state. Each question is independently grounded; prior assistant messages are not sent back to the backend.
+- Added visible scope messaging that Copilot searches recorded CareLoop information and does not diagnose or recommend treatment.
+- Added real suggested-question buttons, labeled question input, Enter-to-send, Shift+Enter new lines, 2,000-character limit, blank-submit prevention, loading state, retryable network/server error state, and duplicate-submit protection.
+- Added distinct grounded, not-found, unsupported, and server-error presentation without treating unsupported medical questions as application errors.
+- Added dedicated expandable citation UI with patient-friendly provenance, verbatim versus recorded-information wording, optional filenames, source fields, and “View care journey” links.
+- Added response focus management, live status announcements, keyboard-operable suggestions and citations, visible focus states, and responsive mobile-safe chat layout.
+- Updated the Dashboard Copilot CTA to open the real Copilot page.
+- Preserved Light, Dark, System, Large Text, High Contrast, reduced-motion support, Dashboard/Care Journey/episode navigation, and existing source traceability.
+
+Validation:
+
+- Frontend production build passes.
+- Frontend lint completes with five existing warnings in ActionItem.jsx, Timeline.jsx, and the pre-existing EpisodePage.jsx effect; no lint errors were added by the Copilot UI.
+- Backend Copilot suite passes with 54 tests after the frontend changes.
+- `git diff --check` passes.
+- Browser and screen-reader interactions were not claimed as manually tested; keyboard, focus, status, responsive, theme, and citation behavior were reviewed in code.
+- No backend files were modified for Stage 9D and no conversation persistence was added.
+
+## Stage 9E Copilot UI simplification and conversation polish — 2026-09-29
+
+Stage 9E refines the existing Copilot frontend without changing the backend contract or safety behavior. The empty state is now a lightweight question prompt with compact suggested-question chips, and the conversation view uses a compact CareLoop identity plus an expandable Suggestions control.
+
+- Removed the large scope and empty-state information cards from the patient-facing flow.
+- Kept the composer as the primary interaction, with a soft bordered multiline input, integrated send action, Enter/Shift+Enter guidance, near-limit character count, and a concise safety boundary.
+- Added reduced-motion-aware prompt entrance animation, compact unsupported/not-found follow-up actions, and a calm network-error retry state.
+- Kept citations expandable and provenance-preserving; multiple citations are summarized as a source count while individual evidence remains available on demand.
+- Preserved keyboard operation, focus movement to new answers, appearance modes, high contrast, large text, mobile safe-area spacing, and all existing Copilot API behavior.
+- No backend files, API contracts, medical logic, persistence, or source-grounding rules were changed for Stage 9E.
+
+Validation for this stage: frontend production build passed; lint passed with the same five pre-existing warnings in unrelated files; `git diff --check` passed; and the unchanged backend suite passed all 54 tests. Browser and screen-reader interactions were not claimed as manually tested.
+
+## Stage 10A Copilot visual refinement — 2026-09-29
+
+Stage 10A is a frontend-only visual pass over the existing Copilot interaction. It does not change Copilot grounding, answer generation, safety behavior, citations, suggestions, retry behavior, or accessibility settings.
+
+- Refined the composer into one soft, focus-ringed control with an integrated compact send arrow, preserved disabled/loading behavior, and constrained textarea growth.
+- Kept the live status announcement for assistive technology while removing redundant visible response-ready text, recorded-care-only text, and the duplicate Care Journey link.
+- Simplified user attribution to “You,” reduced response surface boxing, and kept the CareLoop marker and directly associated expandable citations.
+- Preserved compact Suggestions chips, automatic collapse after selection, keyboard focus behavior, reduced-motion handling, mobile bottom-navigation spacing, and theme/high-contrast compatibility.
+- No backend files or API contracts were modified.
+
+Validation for this stage: frontend production build, lint, `git diff --check`, and the unchanged backend Copilot suite are required and recorded after implementation. Browser and screen-reader interactions were not claimed as manually tested.
+
 **Status:** ✅ Application is in excellent condition
 
 ---
+
+## Stage 10B Copilot micro-polish and patient-friendly deterministic output — 2026-09-30
+
+Stage 10B refines the Copilot composer and message spacing, and updates only deterministic care-history answer assembly. Grounding, safety classification, provenance, citations, unsupported/not-found behavior, and API contracts remain unchanged.
+
+- The composer now uses a compact, non-resizable textarea with controlled auto-growth, internal scrolling after its maximum height, safe text padding, and comfortable send-button placement.
+- Improved user and CareLoop message breathing room, line height, citation spacing, grouped source summaries, and expanded evidence/link spacing without making the conversation overly card-like.
+- Deterministic care-history responses now use recorded appointment types, the `Care journey` fallback when absent, and human-readable added dates instead of raw ISO timestamps. Each episode's metadata evidence remains cited.
+- Added regression coverage for human-readable dates, fallback episode titles, and per-episode citation preservation.
+- No frontend API behavior or Copilot safety/grounding rules changed. Backend files modified: `backend/copilot_answers.py` for deterministic presentation formatting and `backend/tests/test_copilot_answers.py` for regression coverage.
+
+Validation: frontend production build passed; lint passed with five pre-existing warnings; all 55 backend tests passed; and `git diff --check` passed. Browser and screen-reader interactions were not claimed as manually tested.
+
+## Stage 10C Trace My Care Plan and patient-facing source disclosures — 2026-09-30
+
+Stage 10C adds a clearer “Why am I seeing this?” disclosure to grounded timeline content. It keeps the underlying source field and extracted value available without exposing raw JSON or developer-oriented field names.
+
+- Source disclosures now distinguish clinician-provided documents, patient-entered notes, check-ins, and CareLoop records using labels and icons.
+- The trace panel can show a friendly source label, document filename when available, patient-facing field name, recorded versus verbatim wording, the recorded information, and how it was used in the care plan.
+- Action items, information cards, suggested questions, check-ins, and patient-note-derived content retain accessible provenance actions without competing with the primary instruction.
+- Missing source details use neutral “Not specified” treatment and explicitly avoid guessing. The disclosure supports keyboard focus, Escape, close control, visible focus, large text, high contrast, dark mode, reduced motion, and mobile-safe positioning.
+- No backend files or backend behavior were modified for Stage 10C. Existing backend tests remain unchanged.
+
+Validation: frontend production build passed; lint passed with five pre-existing warnings; all 55 backend tests passed; and `git diff --check` passed. Browser and screen-reader interactions were not claimed as manually tested.
+
+## Stage 10D Simple Mode — 2026-09-30
+
+Stage 10D adds an optional, persistent Simple Mode preference. It is independent from Large Text, High Contrast, and Light/Dark/System appearance, and is applied globally through the existing application shell.
+
+- Added a keyboard-accessible, pressed-state Simple Mode control in Accessibility and appearance settings, persisted in localStorage.
+- Reduced secondary copy and metadata density across Dashboard, Care Journey, the episode timeline, and Copilot while preserving the Before → During → After → Check-ins structure.
+- Increased spacing and primary content prominence for action cards, information cards, check-ins, journey entries, and suggested questions.
+- Preserved all medical instructions, warning/flagged content, document controls, source traceability, Copilot safety behavior, and API/data flow.
+- Simple Mode combines with Large Text, High Contrast, Light/Dark/System, reduced motion, keyboard focus, and mobile layout rules.
+
+Validation: frontend production build and lint passed with the same five pre-existing warnings; all 55 backend tests passed; and `git diff --check` passed. Browser and screen-reader interactions were not claimed as manually tested.
+
+## Stage 10E grounded Dashboard Today view — 2026-09-30
+
+Stage 10E adds a Dashboard Today section using only an explicitly dated appointment field from extracted appointment-letter data. It does not reinterpret episode creation dates, relative check-in day offsets, reminders, local action state, or undated records.
+
+- Supported Today category: appointment records whose `appointment_date` is an unambiguous ISO calendar date matching the user's local date; appointment time is shown only when the same source explicitly provides it.
+- Intentionally omitted: check-ins, because the current model stores only `scheduled_for_day` relative to an episode rather than a calendar date; medication schedules, due tasks, deadlines, recovery status, and `created_at`-based events are also omitted.
+- Added calm empty and populated states, one primary View journey action per Today card, source traceability through the existing “Why am I seeing this?” disclosure, and Simple Mode emphasis.
+- No backend files, medical logic, API contracts, persistence, or check-in behavior were changed.
+
+Validation: frontend production build and lint passed with five pre-existing warnings; all 55 backend tests passed; and `git diff --check` passed. Browser and screen-reader interactions were not claimed as manually tested.
+
+## Stage 10F Questions → During Visit → Post-visit continuity — 2026-09-30
+
+Stage 10F connects prepared Before questions to the During phase and keeps the distinction between clinician-authored information and patient-entered notes explicit.
+
+Implemented:
+
+- Prepared questions now use stable text-derived IDs, so a patient can attach a visit note to the specific question they prepared.
+- The Before phase presents questions under “Questions to ask” without implying that every question must be asked.
+- The During phase resurfaces those questions under “Questions you prepared,” with keyboard-accessible “Add what you heard” controls.
+- Question-specific notes use the existing During capture/generation path and are stored as `DuringNote` records with an optional question reference. General During notes remain unchanged.
+- Persisted answers are labeled “You recorded” and “patient-entered visit note”; they are not presented as clinician-confirmed instructions.
+- The timeline shows “Questions discussed” when a question has a recorded note and a neutral “Still unanswered” state when no answer has been recorded. Absence is never relabeled as “Not discussed.”
+- Prepared-question source disclosures remain available through “Why am I seeing this?”, while patient-entered notes use the separate patient-note provenance treatment.
+- The existing Before → During → After → Check-ins journey, source traceability, appearance modes, Simple Mode, focus states, and reduced-motion behavior are preserved.
+
+The narrow backend extension adds optional question-reference fields to the existing During note model/request and validates that a referenced question belongs to the current episode. No medical logic, extraction, generation rules, check-in behavior, or persistence model outside this continuity reference changed.
+
+Validation:
+
+- Frontend production build passes.
+- Frontend lint completes with the repository’s five existing non-blocking warnings; no new warnings were introduced by Stage 10F.
+- `git diff --check` passes.
+- Backend pytest could not run in this environment because the available `venv` does not include `pytest` and no system `python` command is available. Backend compilation should be run with the project’s configured Python environment.
+- Added model-level tests for stable question IDs, patient-note question references, and request validation; they require the repository’s test dependencies.
+- Browser and screen-reader interactions were not claimed as manually tested.
+
+## Stage 10G grounded contextual check-ins — 2026-09-30
+
+Stage 10G connects follow-up check-ins to existing clinician-provided discharge data without changing scheduling, response persistence, or warning-sign flagging logic.
+
+Implemented:
+
+- Check-in prompts use grounded contextual wording only when `source_field` resolves to an actual extracted discharge value, including warning signs, activity restrictions, or follow-up information.
+- Check-in source disclosures now receive the real discharge extraction and use the patient-facing “Why am I being asked this?” action.
+- Trace details preserve the source document, friendly source field, recorded information, and how it appears in the check-in.
+- Flagged responses use neutral source-grounded wording: “This matches something your care instructions asked you to watch for,” followed by the existing provider-contact guidance.
+- Non-flagged submitted responses show “Check-in saved.” and do not make medical reassurance claims.
+- Recorded and upcoming check-ins are easier to scan with Day N and recorded/upcoming status labels. Relative `scheduled_for_day` values remain relative and are not converted into calendar dates.
+- Missing source context falls back to the existing stored prompt and does not invent medical wording.
+- Existing response controls, keyboard focus, provenance disclosure, Simple Mode, appearance modes, reduced motion, and mobile behavior remain intact.
+
+Validation:
+
+- Frontend production build passes.
+- Frontend lint completes with the same five existing non-blocking warnings; no new warnings were introduced by Stage 10G.
+- Backend compilation passes.
+- Direct flagging checks pass for warning-derived, non-flagged, and missing-source cases.
+- Full pytest could not run because pytest is not installed in the available project environment; no test count is claimed. Added backend regression tests are ready for the configured test environment.
+- Browser and screen-reader interactions were not claimed as manually tested.
+
+## Stage 11A feature-freeze QA — 2026-09-30
+
+Stage 11A performed an integration and demo-readiness review across the Stage 1–10G implementation. No new product features were added and no concrete frontend, backend, grounding, provenance, or accessibility regression requiring a code fix was identified.
+
+Current implemented feature set includes:
+
+- Dashboard, Care Journey, Copilot shell, and existing episode detail routing.
+- Before → During → After → Check-ins timeline with question continuity into persisted During notes.
+- Grounded document upload, generated care content, check-ins, source disclosures, contextual check-in wording, and source-grounded flagging.
+- Deterministic and LLM-backed Copilot behavior constrained to recorded CareLoop data, with citations and unsupported/not-found handling.
+- Light, Dark, System, Large Text, High Contrast, Simple Mode, reduced-motion support, keyboard focus, and responsive layouts.
+
+Safety boundaries remain unchanged:
+
+- No diagnosis, treatment recommendation, medication adjustment, prognosis, or general-medical fallback.
+- No invented dates, tasks, recovery status, source values, clinician confirmation, or patient history.
+- Patient-entered notes remain patient-entered and are not treated as clinician-authored evidence.
+- Check-in flagging uses only warning criteria derived from the patient’s own extracted source documents.
+- Conflicting recorded evidence remains source-separated.
+
+Automated baseline:
+
+- Backend suite: 61 passed, 0 failed, 0 skipped.
+- Backend compilation: passed.
+- Frontend production build: passed.
+- Frontend lint: completed with five existing non-blocking warnings in ActionItem.jsx, EpisodePage.jsx, and Timeline.jsx.
+- `git diff --check`: passed.
+
+Manual QA status:
+
+- The requested browser walkthrough, viewport checks, keyboard-only checks, and appearance-mode interaction checks could not be executed because no in-app browser target was available in this environment. They are not claimed as manually tested.
+- Code-level review covered navigation structure, persistence paths, provenance boundaries, empty/loading/error states, focus semantics, mobile CSS, and reduced-motion rules.
+
+Known limitations:
+
+- The demo database currently contains only empty generic episodes; no fake records were added during QA.
+- Scheduling remains relative/demo-oriented (`scheduled_for_day` and Simulate Day), not a real calendar scheduler.
+- Browser and screen-reader validation remains outstanding before external demo sign-off.
+
+Feature-freeze assessment: automated checks are green and no demo-blocking code issue was found, but final readiness still requires the manual browser walkthrough in an environment with a working browser target and representative grounded demo data.
+
+## Final frontend UI polish — 2026-09-30
+
+Implemented a frontend-only presentation pass without changing backend logic, API behavior, medical logic, grounding, persistence, or source data.
+
+- Copilot now presents the heading, short description, suggestions, conversation, citations, safety boundary, and composer inside one rounded outlined surface.
+- Removed duplicated empty-state filler text while preserving grounded messages, citations, provenance, unsupported/not-found states, retry behavior, and accessibility semantics.
+- Copilot citations now use patient-facing labels such as “Date added,” “Warning signs,” “Follow-up information,” and “Recorded response” instead of exposing internal field names.
+- Dashboard primary sections now use calmer outlined containers for Today, Care overview, Follow-up activity, and CareLoop Copilot.
+- The Dashboard Copilot card shows one randomly selected question from a fixed grounded-question set. Selecting it opens Copilot and prefills the composer without submitting automatically.
+- Appearance-mode buttons have explicit readable hover, focus, active, and selected text colors across light, dark, system, and high-contrast combinations.
+- Simple Mode, Large Text, reduced motion, keyboard focus, mobile navigation, source traceability, and patient-facing safety copy are preserved.
+
+Validation:
+
+- Frontend production build passes.
+- Frontend lint completes with the same five existing non-blocking warnings; no new warnings were introduced by this polish pass.
+- `git diff --check` passes.
+- Backend files and API behavior were not modified.
+- Browser interactions were not manually claimed because no in-app browser target was available.
+
+## Final Dashboard and Copilot layout polish — 2026-09-30
+
+Implemented a frontend-only layout refinement without changing backend logic, API behavior, grounded data semantics, or medical functionality.
+
+- Dashboard content now uses a responsive two-column, two-row card grid on desktop/tablet: Today, Care overview, Follow-up activity, and CareLoop Copilot.
+- Recent care journeys remains a separate full-width section below the grid.
+- Dashboard cards use consistent borders, radius, padding, and reduced nested-card treatment while preserving grounded counts and Today behavior.
+- The Dashboard Copilot question now reuses the Copilot suggestion-chip class and theme/hover/focus treatment. It continues to navigate to Copilot and prefill without auto-submitting.
+- The Copilot composer textarea no longer renders its own border or outline; the outer composer owns the border and `:focus-within` focus ring.
+- Simple Mode, Large Text, High Contrast, Dark/System appearance, reduced motion, keyboard focus, and mobile collapse behavior are preserved.
+
+Validation:
+
+- Frontend production build passed.
+- Frontend lint completed with the same five existing non-blocking warnings.
+- Backend suite passed: 61 tests.
+- `git diff --check` passed.
+- No backend files were modified.
+
+## Dashboard and Copilot structural correction — 2026-09-30
+
+Applied the requested frontend-only structural correction without changing backend behavior or API contracts.
+
+- `DashboardPage.jsx` now renders exactly four direct dashboard panels inside one `dashboard-grid`: Today, Care overview, Follow-up activity, and CareLoop Copilot.
+- Recent care journeys is outside the grid and remains a full-width section below it.
+- The four panels use consistent shell sizing, padding, borders, radius, and responsive collapse behavior.
+- Care overview statistics no longer render as separate large nested cards; they remain lightweight internal columns within the single panel.
+- Follow-up activity and Copilot no longer rely on narrow or max-width inner shells.
+- The Dashboard suggested question uses the exact Copilot suggestion-chip class and no longer uses underlined-link presentation.
+- The Copilot textarea and its focus states explicitly remove inner border, outline, box-shadow, and background boundary; the outer composer remains the sole focus-within treatment.
+- Light/Dark/System appearance-button contrast, accessibility modes, and grounded data behavior remain unchanged.
+
+Validation:
+
+- Frontend production build passed.
+- Frontend lint completed with the same five existing non-blocking warnings.
+- Backend suite passed: 61 tests.
+- `git diff --check` passed.
+- No backend files were modified.
+
+## Stage 11B final motion system and visual polish — 2026-09-30
+
+Stage 11B adds frontend-only motion and consistency polish. Backend logic, medical behavior, grounding, persistence, routing behavior, and API contracts are unchanged.
+
+Implemented:
+
+- Added shared motion tokens and easing for a restrained, consistent system.
+- Added subtle route content entry while keeping persistent navigation stable.
+- Added short staggered entry for Dashboard panels and recent journey cards, with timeline delays capped to avoid slow reveals.
+- Added quiet entry and transition treatment for Copilot content, messages, suggestions, citations, source disclosures, controls, navigation, and the appearance panel.
+- Kept motion focused on opacity and small transforms; there is no bounce, pulse, large movement, or fake typing.
+- Preserved reduced-motion behavior by disabling the new animations and transforms when the operating system requests reduced motion.
+- Preserved existing keyboard focus, provenance, warning visibility, responsive layout, Simple Mode, and appearance combinations.
+
+Validation:
+
+- Frontend production build passed.
+- Frontend lint completed with the same five existing non-blocking warnings.
+- Backend test suite passed: 61 tests.
+- `git diff --check` passed.
+- No backend files were modified.
+- Browser animation QA was not manually performed because no in-app browser target was available in this environment.
+
+## Stage 11C final Copilot execution verification and background polish — 2026-09-30
+
+Stage 11C preserves Copilot behavior and adds metadata-only execution diagnostics plus a subtle application-shell background treatment.
+
+Copilot execution paths:
+
+- Direct supported lookups use deterministic answer construction and do not call Gemini.
+- Summary-style care-history or visit-note questions with multiple evidence items use the Gemini synthesis path.
+- Unsupported medical-judgment questions return the safe unsupported response without calling Gemini for a medical answer.
+- Evidence-free questions return the not-found response without calling Gemini.
+- The answer router now logs only request ID, intent, evidence count, answer type, generation path, and validation result. Patient questions, notes, document contents, and generated answers are not logged.
+
+Automated verification:
+
+- Tests prove deterministic queries do not call Gemini.
+- Tests prove a synthesis-required query calls the mocked Gemini generator and preserves valid evidence citations.
+- Existing tests continue to cover malformed output, nonexistent citations, unsafe generated claims, unsupported questions, and safe deterministic fallback behavior.
+- Full backend suite passed: 63 tests.
+- Backend compilation passed.
+
+Live provider verification was not performed. No `GEMINI_API_KEY` environment variable or `backend/.env` file was configured in this environment, and the normal test suite intentionally does not use paid/live network access. To verify locally, configure the key and submit a multi-record synthesis question such as “Summarize my recorded care history,” then confirm the metadata-only `copilot_answered` log reports `generation_path=gemini`; do not enable this as an automated test dependency.
+
+Background polish:
+
+- Added two to three very low-opacity radial CSS gradients at the global page-shell level using the existing CareLoop palette.
+- Added a separate muted dark/system treatment.
+- Disabled decorative gradients in High Contrast and reduced them in Simple Mode.
+- The gradients are static, non-interactive, and do not change layout or content contrast.
+
+Validation:
+
+- Frontend production build passed.
+- Frontend lint passed with the same five existing non-blocking warnings.
+- `git diff --check` passed.
+- No frontend API contracts or patient-facing Copilot safety behavior changed.
+
+## Final Copilot verification and background correction — 2026-09-30
+
+Provider configuration:
+
+- The required environment variable is `GEMINI_API_KEY`; its value was not printed or logged.
+- It is not present in the current environment, and `backend/.env` is absent.
+- The configured Gemini fallback sequence is `gemini-2.5-flash`, `gemini-2.5-pro`, `gemini-flash-latest`, `gemini-flash-lite-latest`, then `gemini-pro-latest`.
+
+Live Copilot verification:
+
+- Deterministic path verified: yes, through the full automated test suite.
+- Not-found path verified: yes, through the full automated test suite.
+- Live Gemini path verified: no. A real provider request could not be attempted because no `GEMINI_API_KEY` was configured. The mocked synthesis tests remain in place and do not prove live provider availability.
+- No artificial response delay was added; deterministic, unsupported, and not-found responses remain immediate, while Gemini responses use only actual provider latency.
+
+Background correction:
+
+- Light mode now uses a more visible but still low-opacity static green, blue-gray, and warm-neutral aurora treatment over the cream base.
+- Dark mode and dark System mode use separate muted teal and blue-gray gradients.
+- Simple Mode reduces gradient strength.
+- High Contrast disables the decorative gradients, including dark and System variants.
+- The background remains CSS-only, static, non-interactive, and behind the existing cards and content.
+
+Validation:
+
+- Backend tests passed: 63 tests.
+- Backend compilation passed.
+- Frontend production build passed.
+- Frontend lint passed with the same five existing non-blocking warnings.
+- `git diff --check` passed.
+
+## Final application background correction — 2026-09-30
+
+The application background now uses a more visible but still restrained static three-gradient aurora. The mint/teal upper-left glow, blue-gray upper-right glow, and faint warm lower glow remain CSS-only and do not change layout or application behavior.
+
+The background stack was reviewed: `html`, `body`, `#root`, `.app-main`, and `.page-shell` now explicitly preserve the page background rather than covering it with an opaque wrapper. Cards and panels remain raised/opaque as intended.
+
+Simple Mode reduces the gradient strength, while High Contrast disables decorative gradients entirely. Dark and System-dark modes use separate muted aurora values. Screenshot/browser validation was not completed because no in-app browser target was available; frontend build, lint, and `git diff --check` passed.
 
 ## Executive Summary
 
