@@ -50,6 +50,10 @@ export function Timeline({ episode, onEpisodeUpdate }) {
   const hasAfter = !!episode.after
   const hasDuring = episode.during?.length > 0
   const hasCheckins = episode.checkins?.length > 0
+  const checkinSourceJson =
+    episode.documents.find(d => d.doc_type === 'discharge_summary')?.extracted_json ||
+    episode.documents.at(-1)?.extracted_json ||
+    null
 
   return (
     <div>
@@ -376,6 +380,7 @@ export function Timeline({ episode, onEpisodeUpdate }) {
                     episodeId={episode.episode_id}
                     onRespond={handleCheckinRespond}
                     animDelay={i}
+                    extractedJson={checkinSourceJson}
                   />
                 ))
               }
@@ -387,6 +392,7 @@ export function Timeline({ episode, onEpisodeUpdate }) {
                   episodeId={episode.episode_id}
                   onRespond={handleCheckinRespond}
                   animDelay={0}
+                  extractedJson={checkinSourceJson}
                 />
               )}
 

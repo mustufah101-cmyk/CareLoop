@@ -3,7 +3,8 @@
  * All fetch calls go through here — proxy routes to http://localhost:8000
  */
 
-const BASE = '/api'
+const configuredBaseUrl = import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, '')
+const BASE = configuredBaseUrl ? `${configuredBaseUrl}/api` : '/api'
 
 async function request(path, options = {}) {
   const headers = { ...options.headers }
