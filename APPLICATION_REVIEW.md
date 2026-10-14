@@ -585,6 +585,128 @@ The background stack was reviewed: `html`, `body`, `#root`, `.app-main`, and `.p
 
 Simple Mode reduces the gradient strength, while High Contrast disables decorative gradients entirely. Dark and System-dark modes use separate muted aurora values. Screenshot/browser validation was not completed because no in-app browser target was available; frontend build, lint, and `git diff --check` passed.
 
+## Final Copilot live-AI integration — 2026-10-14
+
+The Copilot now supports a grounded `general_grounded_query` intent for open-ended questions about the patient’s recorded care. It retrieves only the supplied patient’s stored evidence, routes meaningful synthesis to the existing Gemini provider, and requires every substantive generated segment to cite retrieved evidence.
+
+Implemented:
+
+- Added general grounded routing for questions such as “What can I do now?”, “What should I know from my care records?”, and care summaries.
+- General action-oriented questions retrieve recorded preparation, action, restriction, and follow-up evidence only; broader summaries can include recorded documents, follow-up, visit notes, warning signs, check-ins, and episode metadata.
+- Preserved exact deterministic lookups and unsupported medical-judgment refusals.
+- Gemini receives only the user question and serialized retrieved evidence; no web content, unrelated episodes, prior AI answers, or hidden database contents are provided.
+- Malformed output, invalid citations, unsafe generated claims, provider failures, and missing provider configuration now produce a safe service error for Gemini-routed requests instead of a fabricated or deterministic fallback answer.
+- Provider diagnostics log only request ID, intent, evidence count, generation path, selected model when available, validation result, and provider latency. The provider logs `Gemini configured: yes/no` without exposing the key.
+- Existing frontend loading, duplicate-send prevention, retry, citations, provenance, and safety copy remain in use.
+
+Validation:
+
+- Full backend suite passed: 65 tests.
+- Backend compilation passed.
+- Frontend production build passed.
+- Frontend lint passed with the same five existing non-blocking warnings.
+- `git diff --check` passed.
+- Automated Gemini coverage is mocked and does not require a live key.
+- Live Gemini verification was not performed because `GEMINI_API_KEY` is not configured in this environment; therefore live provider operation is not claimed.
+
+## Stage 12A-Lite authentication foundation — 2026-10-14 (superseded)
+
+The final authentication foundation adds Supabase email/password identity without migrating the existing CareLoop care-data model or adding persistent Copilot conversation history.
+
+Implemented:
+
+- Accessible CareLoop login and account-creation views with friendly validation/error states.
+- Session restoration on refresh through Supabase `getSession` and `onAuthStateChange`.
+- Protected application shell: Dashboard, Care Journey, episode detail, and Copilot render only after authentication has resolved and a user session exists.
+- Account details and logout in the existing Accessibility & appearance panel. Logout clears the frontend session and unmounts in-memory Copilot conversation state.
+- Centralized API request handling adds `Authorization: Bearer <access_token>` when a Supabase session is available.
+- Reusable FastAPI Bearer-token dependency verifies Supabase-issued tokens using the configured project JWKS endpoint or the explicitly configured legacy JWT secret. API routers are protected; `/health` remains public.
+- `.env.example` contains placeholders for frontend Supabase URL/publishable key and backend verification settings. No real secrets are committed.
+- Automated backend coverage for missing, invalid, and mocked-authenticated requests; the existing Copilot API tests use a mocked authenticated dependency.
+
+Known limitation:
+
+Authentication is implemented; full per-user care-data isolation remains future work. The existing SQLite/demo patient data model and `patient_id` request flow remain unchanged in this Lite stage, so authentication must not be represented as complete multi-user data isolation.
+
+Validation:
+
+- Backend pytest suite passes (68 tests) and backend compilation passes.
+- Frontend production build passes.
+- Frontend lint completes with six non-blocking warnings and no errors; five are pre-existing component warnings and one is the auth session synchronization effect.
+- `git diff --check` passes.
+
+## Stage 12B persistent authenticated Copilot history — 2026-10-14 (superseded ownership model)
+
+Copilot conversations now persist in the existing SQLite storage while remaining separate from CareLoop clinical evidence.
+
+Implemented:
+
+- Authenticated conversation list, detail, create, and delete endpoints under `/api/copilot/conversations`.
+- Conversations are owned by the verified Supabase user ID. Frontend-supplied `user_id` values are not accepted, and another user’s conversation is returned as unavailable.
+- Lazy conversation creation on the first question, with deterministic titles such as “Warning signs,” “Care journey summary,” or a short normalized question.
+- User messages are stored before the existing Copilot pipeline runs. Assistant responses are stored only after the existing grounding, safety, citation, and Gemini validation pipeline succeeds.
+- Citation/provenance metadata is stored with assistant messages for re-rendering; documents, extracted evidence, and care records are not duplicated into chat storage.
+- Failed Copilot requests do not create fake assistant messages. Retry requests do not reinsert the already-visible user message.
+- The Copilot UI supports new chat, recent-chat navigation, reopening, continuation, deletion with confirmation, mobile chat history, and keyboard-accessible controls.
+- Previous assistant messages are display/conversation state only. They are never passed to grounding or Gemini as evidence; each new question retrieves current CareLoop evidence independently.
+- Logging out clears the current frontend conversation state but does not delete persisted chats.
+
+Safety and ownership tests cover authenticated creation/listing, cross-user read/delete/append isolation, title creation, user/assistant persistence, citation/provenance re-rendering, failed calls, ordered reopening, old-answer exclusion from grounding, and deletion without episode deletion.
+
+Validation:
+
+- Full backend pytest suite passes, including 76 tests.
+- Backend compilation passes.
+- Frontend production build passes.
+- Frontend lint completes with non-blocking repository warnings and no errors.
+- `git diff --check` passes.
+
+## Stage 12C local demo mode — 2026-10-14
+
+The experimental Supabase authentication layer has been removed from the shipping application. CareLoop now opens directly as a single-user/local demo app, with unauthenticated API routes and no Supabase client, auth screen, token injection, or account controls.
+
+Persistent Copilot conversation history remains enabled:
+
+- New chat, recent chats, reopen, continue, deterministic titles, deletion confirmation, mobile history, and persisted assistant citations/provenance remain available.
+- Existing `copilot_conversations.user_id` values are retained for SQLite compatibility, but local/demo conversation queries intentionally ignore that field. Legacy auth-owned rows therefore remain visible to the local demo user rather than being deleted or stranded.
+- Chat history remains display/conversation state only. Every new question still retrieves fresh CareLoop evidence through the existing grounding pipeline; prior assistant messages are never used as evidence.
+- Failed requests still persist no fabricated assistant answer, and deleting a chat does not affect episodes or care documents.
+
+Full account-based authentication and per-user data ownership are future work.
+
+Validation:
+
+- Full backend pytest suite passes: 73 tests.
+- Backend compilation passes.
+- Frontend production build passes.
+- Frontend lint completes with non-blocking repository warnings and no errors.
+- `git diff --check` passes.
+
+## Final Copilot verification and delete-dialog polish — 2026-10-14
+
+Live Gemini verification:
+
+- `GEMINI_API_KEY` was present in `backend/.env`; the key value was not printed or logged.
+- The configured loader is `load_dotenv()` plus `os.environ.get("GEMINI_API_KEY")` in the existing generator provider layer.
+- A real synthesis-required request was routed with `generation_path=gemini` and `evidence_count=3`.
+- The real provider attempt did not produce a validated answer in this environment, so live Gemini success is not claimed. The existing safe `CopilotSynthesisError`/503 behavior was preserved.
+- Deterministic, not-found, and unsupported routing remain immediate and unchanged; no artificial delay was added.
+- Provider diagnostics remain metadata-only: route, evidence count, model when selected, latency, and validation result.
+
+Delete-dialog polish:
+
+- Replaced the native browser confirmation with a CareLoop-styled responsive alert dialog.
+- Cancel receives initial focus, Escape closes the dialog, Tab/Shift+Tab are trapped within it, and focus returns to the originating delete control when possible.
+- Cancel performs no changes. Confirm deletes only the selected Copilot conversation; care journeys, documents, and check-ins are untouched.
+
+Validation:
+
+- Full backend pytest suite passed: 73 tests.
+- Backend compilation passed.
+- Frontend production build passed.
+- Frontend lint passed with six non-blocking repository warnings.
+- `git diff --check` passed.
+
 ## Executive Summary
 
 Your CareLoop application is **well-architected and ready for demo**. The codebase follows the specifications in GEMINI.md and DESIGN.md consistently. I've reviewed all components and found the implementation to be solid.

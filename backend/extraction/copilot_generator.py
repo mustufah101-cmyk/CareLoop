@@ -6,11 +6,19 @@ conversation history, or external medical context.
 """
 
 import json
+from dataclasses import dataclass
 from typing import Any
 
 from google.genai import types
 
-from .generator import _generate_with_fallback, _parse_json_response
+from .generator import _generate_with_fallback_metadata, _parse_json_response
+
+
+@dataclass(frozen=True)
+class CopilotGenerationResult:
+    payload: dict[str, Any]
+    model: str
+    provider_latency_ms: int
 
 
 COPILOT_SYNTHESIS_PROMPT = """You are the answer-synthesis role for CareLoop Copilot.
@@ -51,11 +59,15 @@ async def generate_copilot_synthesis(question: str, evidence: list[dict[str, Any
     prompt = COPILOT_SYNTHESIS_PROMPT.replace("{question}", question).replace(
         "{evidence_json}", json.dumps(evidence, indent=2, ensure_ascii=False)
     )
-    raw = await _generate_with_fallback(
+    raw, model, provider_latency_ms = await _generate_with_fallback_metadata(
         contents=[types.Content(role="user", parts=[types.Part.from_text(text=prompt)])],
         config=types.GenerateContentConfig(
             temperature=0.1,
             max_output_tokens=3000,
         ),
     )
-    return _parse_json_response(raw)
+    return CopilotGenerationResult(
+        payload=_parse_json_response(raw),
+        model=model,
+        provider_latency_ms=provider_latency_ms,
+    )

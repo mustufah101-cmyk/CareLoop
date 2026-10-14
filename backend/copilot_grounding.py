@@ -67,6 +67,14 @@ def classify_copilot_intent(question: str) -> CopilotIntent:
         return CopilotIntent.CHECKIN_HISTORY_LOOKUP
     if any(term in normalized for term in ("care instruction", "instructions", "driving", "bring", "preparation", "restriction", "medication")):
         return CopilotIntent.DOCUMENT_INSTRUCTION_LOOKUP
+    if any(term in normalized for term in (
+        "what can i do now", "what should i know", "summarize", "summary",
+        "what happened", "what do my records say", "anything important",
+        "care so far", "across my care", "across my journeys", "need to do",
+        "care plan",
+    )):
+        return CopilotIntent.GENERAL_GROUNDED_QUERY
+
     if any(term in normalized for term in ("care journey", "care journeys", "episodes", "recorded care", "care history", "visits")):
         return CopilotIntent.CARE_HISTORY_LOOKUP
 
@@ -109,6 +117,8 @@ def ground_question(
         evidence.extend(_checkin_evidence(patient_episodes))
     elif intent == CopilotIntent.UNSUPPORTED_MEDICAL_JUDGMENT:
         evidence.extend(_related_warning_sign_evidence(patient_episodes, request.question))
+    elif intent == CopilotIntent.GENERAL_GROUNDED_QUERY:
+        evidence.extend(_general_grounded_evidence(patient_episodes, request.question))
 
     related_episode_ids = _unique_episode_ids(evidence)
     return CopilotGroundingResult(
@@ -250,6 +260,24 @@ def _checkin_evidence(episodes: Iterable[CareEpisode]) -> list[CopilotEvidence]:
                 is_verbatim=False,
             ))
     return result
+
+
+def _general_grounded_evidence(episodes: Iterable[CareEpisode], question: str) -> list[CopilotEvidence]:
+    """Collect only recorded evidence relevant to an open-ended care question."""
+    normalized = " ".join(question.lower().split())
+    evidence: list[CopilotEvidence] = []
+    if any(term in normalized for term in ("what can i do", "need to do", "important", "care plan")):
+        evidence.extend(_document_instruction_evidence(episodes))
+        evidence.extend(_follow_up_evidence(episodes))
+        return evidence
+
+    evidence.extend(_document_instruction_evidence(episodes))
+    evidence.extend(_follow_up_evidence(episodes))
+    evidence.extend(_visit_note_evidence(episodes))
+    evidence.extend(_warning_sign_evidence(episodes))
+    evidence.extend(_checkin_evidence(episodes))
+    evidence.extend(_care_history_evidence(episodes))
+    return evidence
 
 
 def _document_field_evidence(episode, document, field: str, value: Any) -> list[CopilotEvidence]:

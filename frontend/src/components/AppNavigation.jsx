@@ -59,8 +59,8 @@ export function AppNavigation({ route, appearance, setAppearance, largeText, set
                     <button type="button" className={'preference-option preference-option--wide ' + (largeText ? 'preference-option--selected' : '')} aria-pressed={largeText} onClick={() => setLargeText(value => !value)}><span aria-hidden="true">A+</span><span>Large text</span></button>
                     <button type="button" className={'preference-option preference-option--wide ' + (highContrast ? 'preference-option--selected' : '')} aria-pressed={highContrast} onClick={() => setHighContrast(value => !value)}><span aria-hidden="true">◑</span><span>High contrast</span></button>
                      <button type="button" className={'preference-option preference-option--wide ' + (simpleMode ? 'preference-option--selected' : '')} aria-pressed={simpleMode} onClick={() => setSimpleMode(value => !value)}><span aria-hidden="true">☰</span><span>Simple mode</span></button>
-                   </div>
                  </div>
+               </div>
               </div>
             )}
           </div>

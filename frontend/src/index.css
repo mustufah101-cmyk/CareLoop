@@ -408,6 +408,229 @@
   }
 }
 
+/* Stage 12B — authenticated Copilot conversation history. */
+.copilot-workspace {
+  display: grid;
+  grid-template-columns: minmax(190px, 220px) minmax(0, 1fr);
+  gap: var(--space-6);
+  align-items: start;
+}
+
+.copilot-history {
+  position: sticky;
+  top: var(--space-6);
+  padding: var(--space-4);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-raised);
+}
+
+.copilot-history__header {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.copilot-history h2,
+.copilot-history__label {
+  margin: 0;
+}
+
+.copilot-history h2 {
+  font-size: var(--text-lg);
+}
+
+.copilot-history__label {
+  margin-top: var(--space-6);
+  color: var(--color-ink-muted);
+  font-size: var(--text-sm);
+  font-weight: 700;
+}
+
+.copilot-history__empty {
+  color: var(--color-ink-muted);
+  font-size: var(--text-sm);
+  line-height: 1.45;
+}
+
+.copilot-history__list {
+  display: grid;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+.copilot-history__item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: stretch;
+  border-radius: var(--radius-sm);
+}
+
+.copilot-history__item > button:first-child {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  padding: var(--space-3);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-ink);
+  text-align: left;
+  cursor: pointer;
+}
+
+.copilot-history__item > button:first-child span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.copilot-history__item > button:first-child small {
+  color: var(--color-ink-muted);
+  font-size: 0.8em;
+}
+
+.copilot-history__item:hover > button:first-child,
+.copilot-history__item--selected > button:first-child {
+  border-color: var(--color-line);
+  background: var(--color-action-bg);
+}
+
+.copilot-history__delete {
+  width: 44px;
+  min-height: 44px;
+  border: 0;
+  background: transparent;
+  color: var(--color-ink-muted);
+  cursor: pointer;
+}
+
+.copilot-history__delete:hover,
+.copilot-history__delete:focus-visible {
+  color: var(--color-flag);
+}
+
+.copilot-history-toggle {
+  display: none;
+}
+
+@media (max-width: 760px) {
+  .copilot-workspace {
+    display: block;
+  }
+
+  .copilot-history-toggle {
+    display: inline-flex;
+    margin-bottom: var(--space-3);
+  }
+
+  .copilot-history {
+    display: none;
+    position: absolute;
+    z-index: 5;
+    top: 5rem;
+    left: var(--space-4);
+    right: var(--space-4);
+    max-height: min(70vh, 520px);
+    overflow: auto;
+    box-shadow: 0 10px 24px rgba(43, 43, 38, 0.12);
+  }
+
+  .copilot-history--open {
+    display: block;
+  }
+}
+
+.a11y-high-contrast .copilot-history {
+  box-shadow: none;
+}
+
+.copilot-delete-dialog__backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 700;
+  display: grid;
+  place-items: center;
+  padding: var(--space-4);
+  background: rgba(43, 43, 38, 0.48);
+}
+
+.copilot-delete-dialog {
+  width: min(440px, 100%);
+  padding: var(--space-6);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-raised);
+  color: var(--color-ink);
+  box-shadow: 0 18px 44px rgba(43, 43, 38, 0.18);
+}
+
+.copilot-delete-dialog h2 {
+  margin: 0 0 var(--space-3);
+}
+
+.copilot-delete-dialog p {
+  margin: 0;
+  color: var(--color-ink-muted);
+}
+
+.copilot-delete-dialog__actions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-top: var(--space-6);
+}
+
+.copilot-delete-dialog__actions .btn {
+  min-width: 132px;
+}
+
+.copilot-delete-dialog__confirm {
+  border: 1px solid var(--color-flag);
+  border-radius: var(--radius-sm);
+  background: var(--color-flag);
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.copilot-delete-dialog__confirm:hover,
+.copilot-delete-dialog__confirm:focus-visible {
+  background: color-mix(in srgb, var(--color-flag) 86%, var(--color-ink));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .copilot-delete-dialog__backdrop,
+  .copilot-delete-dialog {
+    transition: none;
+  }
+}
+
+@media (max-width: 560px) {
+  .copilot-delete-dialog__backdrop {
+    align-items: end;
+    padding: 0;
+  }
+
+  .copilot-delete-dialog {
+    border-radius: var(--radius-md) var(--radius-md) 0 0;
+    padding: var(--space-4);
+  }
+
+  .copilot-delete-dialog__actions {
+    flex-direction: column-reverse;
+  }
+
+  .copilot-delete-dialog__actions .btn {
+    width: 100%;
+  }
+}
+
+.a11y-high-contrast .copilot-delete-dialog__backdrop {
+  background: rgba(0, 0, 0, 0.72);
+}
+
 @media (max-width: 768px) {
   .copilot-conversation__heading {
     align-items: flex-start;

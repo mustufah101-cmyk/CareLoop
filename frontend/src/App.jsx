@@ -32,7 +32,6 @@ function App() {
   const [largeText, setLargeText] = useState(() => readStoredBoolean(LARGE_TEXT_STORAGE_KEY))
   const [highContrast, setHighContrast] = useState(() => readStoredBoolean(HIGH_CONTRAST_STORAGE_KEY))
   const [simpleMode, setSimpleMode] = useState(() => readStoredBoolean(SIMPLE_MODE_STORAGE_KEY))
-
   useEffect(() => {
     try {
       window.localStorage.setItem(APPEARANCE_STORAGE_KEY, appearance)

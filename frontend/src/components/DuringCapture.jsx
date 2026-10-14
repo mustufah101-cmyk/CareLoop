@@ -19,6 +19,7 @@ export function DuringCapture({
 }) {
   const [notes, setNotes] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [processingLabel, setProcessingLabel] = useState('Saving your note…')
   const [error, setError] = useState(null)
 
   const handleSubmit = async (e) => {
@@ -26,15 +27,25 @@ export function DuringCapture({
     if (!notes.trim()) return
 
     setSubmitting(true)
+    setProcessingLabel('Saving your note…')
     setError(null)
+    const stages = ['Saving your note…', 'Organizing what you recorded…']
+    let stageIndex = 0
+    const interval = setInterval(() => {
+      stageIndex = Math.min(stageIndex + 1, stages.length - 1)
+      setProcessingLabel(stages[stageIndex])
+    }, 1200)
 
     try {
       const result = await api.captureDuringNote(episodeId, notes, questionId, questionText)
+      clearInterval(interval)
       setNotes('')
       onCaptureComplete?.(result)
     } catch (err) {
+      clearInterval(interval)
       setError(err.message || 'Failed to save notes. Please try again.')
     } finally {
+      clearInterval(interval)
       setSubmitting(false)
     }
   }
@@ -62,6 +73,7 @@ export function DuringCapture({
             <strong>Error:</strong> {error}
           </div>
         )}
+        {submitting && <p className="form-status" role="status" aria-live="polite">{processingLabel}</p>}
         <div style={{ marginTop: 'var(--space-4)', display: 'flex', gap: 'var(--space-2)' }}>
           <button
             type="submit"
@@ -69,7 +81,7 @@ export function DuringCapture({
             disabled={submitting || !notes.trim()}
             style={{ minWidth: 160 }}
           >
-            {submitting ? 'Saving…' : submitLabel}
+            {submitting ? processingLabel : submitLabel}
           </button>
         </div>
       </form>

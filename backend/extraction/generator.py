@@ -8,7 +8,9 @@ Handles the Generator LLM role (Role 2):
 """
 
 import json
+import logging
 import os
+import time
 from typing import Any
 
 from google import genai
@@ -23,6 +25,9 @@ from .extractor_prompts import (
     CHECKIN_GENERATOR_PROMPT,
     DURING_FLOW_GENERATOR_PROMPT,
 )
+
+logger = logging.getLogger(__name__)
+_gemini_configuration_logged = False
 
 load_dotenv()
 
@@ -39,8 +44,13 @@ _MODELS = [
 
 
 def _get_client() -> genai.Client:
+    global _gemini_configuration_logged
     api_key = os.environ.get("GEMINI_API_KEY")
+    if not _gemini_configuration_logged:
+        logger.info("Gemini configured: %s", "yes" if api_key else "no")
+        _gemini_configuration_logged = True
     if not api_key:
+        logger.warning("Gemini unavailable: GEMINI_API_KEY is not configured")
         raise ValueError(
             "GEMINI_API_KEY environment variable is not set. "
             "Please add GEMINI_API_KEY=your_key to backend/.env"
@@ -49,9 +59,15 @@ def _get_client() -> genai.Client:
 
 
 async def _generate_with_fallback(contents, config) -> str:
+    text, _, _ = await _generate_with_fallback_metadata(contents, config)
+    return text
+
+
+async def _generate_with_fallback_metadata(contents, config) -> tuple[str, str, int]:
     client = _get_client()
     last_err = None
     for model in _MODELS:
+        started = time.perf_counter()
         try:
             res = await client.aio.models.generate_content(
                 model=model,
@@ -59,7 +75,8 @@ async def _generate_with_fallback(contents, config) -> str:
                 config=config,
             )
             if res and res.text:
-                return res.text
+                latency_ms = round((time.perf_counter() - started) * 1000)
+                return res.text, model, latency_ms
         except Exception as e:
             last_err = e
             continue

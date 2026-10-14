@@ -8,7 +8,7 @@ Used for API request/response validation and database serialization.
 from datetime import datetime
 from enum import Enum
 import hashlib
-from typing import Any, Optional
+from typing import Any, Literal, Optional
 from uuid import uuid4
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
@@ -194,6 +194,7 @@ class CopilotIntent(str, Enum):
     CARE_HISTORY_LOOKUP = "care_history_lookup"
     WARNING_SIGN_LOOKUP = "warning_sign_lookup"
     CHECKIN_HISTORY_LOOKUP = "checkin_history_lookup"
+    GENERAL_GROUNDED_QUERY = "general_grounded_query"
     UNSUPPORTED_MEDICAL_JUDGMENT = "unsupported_medical_judgment"
     UNKNOWN = "unknown"
 
@@ -218,6 +219,8 @@ class CopilotAskRequest(BaseModel):
     patient_id: str = Field(min_length=1, max_length=200)
     question: str = Field(min_length=1, max_length=2000)
     episode_ids: Optional[list[str]] = None
+    conversation_id: Optional[str] = Field(default=None, min_length=1, max_length=100)
+    persist_user_message: bool = True
 
     @field_validator("patient_id", "question")
     @classmethod
@@ -298,3 +301,32 @@ class CopilotAnswerResponse(BaseModel):
     citations: list[CopilotEvidence] = Field(default_factory=list)
     related_episode_ids: list[str] = Field(default_factory=list)
     safety: CopilotSafety
+    conversation_id: Optional[str] = None
+
+
+class CopilotConversationCreateRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+
+class CopilotConversationSummary(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    id: str
+    title: str
+    created_at: str
+    updated_at: str
+    message_count: int = 0
+
+
+class CopilotConversationMessage(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    id: str
+    role: Literal["user", "assistant"]
+    text: str
+    created_at: str
+    response: Optional[CopilotAnswerResponse] = None
+
+
+class CopilotConversationDetail(CopilotConversationSummary):
+    messages: list[CopilotConversationMessage] = Field(default_factory=list)

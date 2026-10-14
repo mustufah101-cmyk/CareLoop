@@ -6,7 +6,7 @@ from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from extraction.copilot_generator import generate_copilot_synthesis
+from extraction.copilot_generator import CopilotGenerationResult, generate_copilot_synthesis
 from models import (
     CopilotAnswerResponse,
     CopilotAnswerSegment,
@@ -27,6 +27,10 @@ class CopilotAnswerValidationError(ValueError):
     """Raised when an answer cannot be proven safe against retrieved evidence."""
 
 
+class CopilotSynthesisError(RuntimeError):
+    """Raised when a Gemini-routed answer cannot be safely produced."""
+
+
 class _GeneratedSegment(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -45,6 +49,7 @@ class _GeneratedPayload(BaseModel):
 async def answer_copilot_question(
     request: CopilotAskRequest,
     grounding: CopilotGroundingResult,
+    diagnostics: dict[str, Any] | None = None,
 ) -> CopilotAnswerResponse:
     """Return a deterministic answer or validated evidence-only synthesis."""
     if grounding.intent == CopilotIntent.UNSUPPORTED_MEDICAL_JUDGMENT:
@@ -56,22 +61,28 @@ async def answer_copilot_question(
         return _validated_deterministic_response(grounding)
 
     try:
-        generated = await generate_copilot_synthesis(
+        generation = await generate_copilot_synthesis(
             request.question,
             [item.model_dump(mode="json") for item in grounding.evidence],
         )
+        if isinstance(generation, CopilotGenerationResult):
+            generated = generation.payload
+            if diagnostics is not None:
+                diagnostics.update(
+                    model=generation.model,
+                    provider_latency_ms=generation.provider_latency_ms,
+                )
+        else:
+            # Mocked providers in tests may return the payload directly.
+            generated = generation
         payload = _GeneratedPayload.model_validate(generated)
         response = _response_from_generated(payload, grounding)
         validate_copilot_answer(response, grounding, generated_with_llm=True)
         return response
-    except Exception:
-        # Never expose malformed model output. Fall back to a deterministic
-        # source listing that remains grounded in the retrieved evidence.
-        return _deterministic_response(
-            grounding,
-            generated_with_llm=True,
-            validation_passed=False,
-        )
+    except Exception as exc:
+        if diagnostics is not None:
+            diagnostics["validation_passed"] = False
+        raise CopilotSynthesisError("Copilot synthesis could not be validated") from exc
 
 
 def copilot_generation_path(
@@ -121,6 +132,8 @@ def validate_copilot_answer(
 
 
 def _needs_synthesis(question: str, grounding: CopilotGroundingResult) -> bool:
+    if grounding.intent == CopilotIntent.GENERAL_GROUNDED_QUERY:
+        return True
     if grounding.intent not in {CopilotIntent.CARE_HISTORY_LOOKUP, CopilotIntent.VISIT_NOTE_LOOKUP}:
         return False
     if len(grounding.evidence) < 2:

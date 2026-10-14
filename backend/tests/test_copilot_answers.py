@@ -7,6 +7,7 @@ from unittest.mock import AsyncMock, patch
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from copilot_answers import (  # noqa: E402
+    CopilotSynthesisError,
     answer_copilot_question,
     validate_copilot_answer,
 )
@@ -164,18 +165,15 @@ class CopilotAnswerTests(unittest.IsolatedAsyncioTestCase):
         records = [episode("episode-one", appointment_type="MRI scan"), episode("episode-two", appointment_type="Physiotherapy")]
         generated = {"answer_type": "grounded", "supported": True, "segments": [{"text": "A summary", "citation_ids": ["not-retrieved"]}]}
         with patch("copilot_answers.generate_copilot_synthesis", new=AsyncMock(return_value=generated)):
-            result = await self.get_answer("Summarize my recorded care history", records)
-        self.assertEqual(result.answer_type, CopilotAnswerType.GROUNDED)
-        self.assertFalse(result.safety.validation_passed)
-        self.assertNotIn("A summary", result.answer)
+            with self.assertRaises(CopilotSynthesisError):
+                await self.get_answer("Summarize my recorded care history", records)
 
     async def test_uncited_substantive_segment_falls_back_safely(self):
         records = [episode("episode-one", appointment_type="MRI scan"), episode("episode-two", appointment_type="Physiotherapy")]
         generated = {"answer_type": "grounded", "supported": True, "segments": [{"text": "There are two recorded journeys.", "citation_ids": []}]}
         with patch("copilot_answers.generate_copilot_synthesis", new=AsyncMock(return_value=generated)):
-            result = await self.get_answer("Summarize my recorded care history", records)
-        self.assertFalse(result.safety.validation_passed)
-        self.assertNotIn("There are two recorded journeys", result.answer)
+            with self.assertRaises(CopilotSynthesisError):
+                await self.get_answer("Summarize my recorded care history", records)
 
     async def test_supported_answer_with_zero_evidence_is_rejected(self):
         grounding = ground_question(ask("What did my instructions say about driving?"), [])
@@ -219,25 +217,22 @@ class CopilotAnswerTests(unittest.IsolatedAsyncioTestCase):
     async def test_malformed_llm_json_falls_back(self):
         records = [episode("episode-one", appointment_type="MRI scan"), episode("episode-two", appointment_type="Physiotherapy")]
         with patch("copilot_answers.generate_copilot_synthesis", new=AsyncMock(side_effect=ValueError("bad JSON"))):
-            result = await self.get_answer("Summarize my recorded care history", records)
-        self.assertFalse(result.safety.validation_passed)
-        self.assertTrue(result.citations)
+            with self.assertRaises(CopilotSynthesisError):
+                await self.get_answer("Summarize my recorded care history", records)
 
     async def test_llm_nonexistent_citation_falls_back(self):
         records = [episode("episode-one", appointment_type="MRI scan"), episode("episode-two", appointment_type="Physiotherapy")]
         generated = {"answer_type": "grounded", "supported": True, "segments": [{"text": "Recorded journeys are available.", "citation_ids": ["fake-id"]}]}
         with patch("copilot_answers.generate_copilot_synthesis", new=AsyncMock(return_value=generated)):
-            result = await self.get_answer("Summarize my recorded care history", records)
-        self.assertFalse(result.safety.validation_passed)
-        self.assertNotIn("fake-id", result.answer)
+            with self.assertRaises(CopilotSynthesisError):
+                await self.get_answer("Summarize my recorded care history", records)
 
     async def test_llm_unsupported_medical_fact_falls_back(self):
         records = [episode("episode-one", appointment_type="MRI scan"), episode("episode-two", appointment_type="Physiotherapy")]
         generated = {"answer_type": "grounded", "supported": True, "segments": [{"text": "You have an infection.", "citation_ids": ["episode-one:metadata:appointment_type"]}]}
         with patch("copilot_answers.generate_copilot_synthesis", new=AsyncMock(return_value=generated)):
-            result = await self.get_answer("Summarize my recorded care history", records)
-        self.assertFalse(result.safety.validation_passed)
-        self.assertNotIn("You have an infection", result.answer)
+            with self.assertRaises(CopilotSynthesisError):
+                await self.get_answer("Summarize my recorded care history", records)
 
     async def test_simple_deterministic_query_does_not_call_llm(self):
         mocked = AsyncMock()
@@ -267,6 +262,27 @@ class CopilotAnswerTests(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(result.safety.generated_with_llm)
         self.assertTrue(result.safety.validation_passed)
         self.assertEqual({item.episode_id for item in result.citations}, {"episode-one", "episode-two"})
+
+    async def test_general_grounded_query_routes_to_llm_with_retrieved_evidence_only(self):
+        grounding = ground_question(ask("What can I do now?"), self.records)
+        self.assertEqual(grounding.intent, CopilotIntent.GENERAL_GROUNDED_QUERY)
+        self.assertTrue(grounding.evidence)
+        generated = {
+            "answer_type": "grounded",
+            "supported": True,
+            "segments": [{
+                "text": "Your recorded instructions include preparation and follow-up information.",
+                "citation_ids": [item.evidence_id for item in grounding.evidence],
+            }],
+        }
+        mocked = AsyncMock(return_value=generated)
+        with patch("copilot_answers.generate_copilot_synthesis", new=mocked):
+            result = await answer_copilot_question(ask("What can I do now?"), grounding)
+        mocked.assert_awaited_once()
+        provider_question, provider_evidence = mocked.await_args.args
+        self.assertEqual(provider_question, "What can I do now?")
+        self.assertEqual({item["evidence_id"] for item in provider_evidence}, {item.evidence_id for item in grounding.evidence})
+        self.assertTrue(result.safety.validation_passed)
 
     async def test_unsupported_medical_question_does_not_call_llm(self):
         mocked = AsyncMock()

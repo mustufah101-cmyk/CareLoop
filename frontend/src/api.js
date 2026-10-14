@@ -48,13 +48,28 @@ export const api = {
 
   listEpisodes: (patientId) => request(`/episodes?patient_id=${encodeURIComponent(patientId)}`),
 
-  askCopilot: (patientId, question, episodeIds) => request('/copilot/ask', {
+  askCopilot: (patientId, question, episodeIds, conversationId, persistUserMessage = true) => request('/copilot/ask', {
     method: 'POST',
     body: JSON.stringify({
       patient_id: patientId,
       question,
       ...(episodeIds ? { episode_ids: episodeIds } : {}),
+      ...(conversationId ? { conversation_id: conversationId } : {}),
+      persist_user_message: persistUserMessage,
     }),
+  }),
+
+  listCopilotConversations: () => request('/copilot/conversations'),
+
+  getCopilotConversation: conversationId => request(`/copilot/conversations/${encodeURIComponent(conversationId)}`),
+
+  createCopilotConversation: () => request('/copilot/conversations', {
+    method: 'POST',
+    body: JSON.stringify({}),
+  }),
+
+  deleteCopilotConversation: conversationId => request(`/copilot/conversations/${encodeURIComponent(conversationId)}`, {
+    method: 'DELETE',
   }),
 
   // ── Documents ─────────────────────────────────────────────────────────────

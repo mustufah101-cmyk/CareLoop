@@ -2,13 +2,14 @@ import sys
 import unittest
 from datetime import datetime
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import AsyncMock, patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from fastapi.testclient import TestClient  # noqa: E402
 
 from copilot_grounding import ground_question  # noqa: E402
+from copilot_answers import CopilotSynthesisError  # noqa: E402
 from main import app  # noqa: E402
 from models import (  # noqa: E402
     CareEpisode,
@@ -138,6 +139,16 @@ class CopilotGroundingApiTests(unittest.TestCase):
         self.assertEqual(data["intent"], "unknown")
         self.assertFalse(data["supported"])
         self.assertEqual(data["evidence"], [])
+
+    def test_general_grounded_query_is_supported_by_answer_endpoint(self):
+        body = {"patient_id": PATIENT_ID, "question": "What can I do now?"}
+        with patch("copilot_grounding.database.list_episodes", return_value=self.records), patch(
+            "routers.copilot.answer_copilot_question",
+            new=AsyncMock(side_effect=CopilotSynthesisError("provider unavailable")),
+        ):
+            response = self.client.post("/api/copilot/ask", json=body)
+        self.assertEqual(response.status_code, 503)
+        self.assertEqual(response.json()["detail"], "CareLoop couldn't check your recorded care right now. Please try again.")
 
     def test_empty_question_validation(self):
         response = self.post("")

@@ -11,22 +11,22 @@ import { api } from '../api'
 export function DocumentUpload({ episodeId, onUploadComplete, label }) {
   const [state, setState] = useState('idle') // idle | drag | processing | error
   const [errorMessage, setErrorMessage] = useState(null)
-  const [processingLabel, setProcessingLabel] = useState('Uploading your care document…')
+  const [processingLabel, setProcessingLabel] = useState('Uploading document…')
   const fileInputRef = useRef(null)
   const hintId = useId()
 
   const processFile = async (file) => {
-    if (!file) return
+    if (!file || state === 'processing') return
 
     setState('processing')
-    setProcessingLabel('Uploading your care document…')
+    setProcessingLabel('Uploading document…')
     setErrorMessage(null)
 
     // Rotate through honest, user-facing stages while the existing request runs.
     const stages = [
-      'Uploading your care document…',
-      'Reading your care document…',
-      'Organising your care journey…',
+      'Uploading document…',
+      'Reading your document…',
+      'Organizing your care information…',
     ]
     let stageIdx = 0
     const interval = setInterval(() => {
